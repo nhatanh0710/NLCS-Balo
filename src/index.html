@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Trang chủ - Bài toán cái balo</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" defer src="home.js"></script>
+</head>
+
+<body>
+    <!-- Nhúng navbar -->
+    <div id="navbar-container"></div>
+
+    <main class="container">
+        <h1>Hệ Thống Giải Bài Toán Cái Balo</h1>
+
+        <section class="intro">
+            <h2>Giới thiệu bài toán</h2>
+            <p>
+                Bài toán cái balo (Knapsack Problem) là một bài toán tối ưu nổi tiếng.
+                Với danh sách các vật phẩm, mỗi vật có trọng lượng và giá trị,
+                mục tiêu là chọn ra các vật sao cho tổng trọng lượng không vượt quá sức chứa balo,
+                đồng thời tổng giá trị là lớn nhất.
+            </p>
+        </section>
+
+        <section class="algorithms">
+            <h2>Thuật toán sử dụng</h2>
+            <ul>
+                <li><b>Tham lam (Greedy)</b>: Chọn vật phẩm theo tỉ lệ giá trị/trọng lượng.</li>
+                <li><b>Quy hoạch động (Dynamic Programming)</b>: Giải chính xác bằng bảng.</li>
+                <li><b>Nhánh cận (Branch and Bound)</b>: Cắt tỉa không gian tìm kiếm.</li>
+            </ul>
+        </section>
+
+        <section class="features">
+            <h2>Chức năng hệ thống</h2>
+            <ul>
+                <li>Nhập dữ liệu vật phẩm hoặc tải file CSV.</li>
+                <li>Giải bài toán bằng từng thuật toán.</li>
+                <li>So sánh kết quả và hiệu suất.</li>
+            </ul>
+        </section>
+
+        <div class="start-btn">
+            <button onclick="location.href='pages/input.html'">👉 Bắt đầu nhập dữ liệu</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 | Ứng dụng cái balo | Made by [Your Name]</p>
+    </footer>
+</body>
+
+</html>

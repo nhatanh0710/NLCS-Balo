@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Trang nhập dữ liệu</title>
+    <link rel="stylesheet" href="../style.css" />
+    <script type="module" src="input.js" defer></script>
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <h2>Trang nhập dữ liệu vật phẩm</h2>
+
+        <div class="section">
+            <div class="section-title">🔷 Tải file CSV</div>
+            <input type="file" id="fileInput" accept=".csv" />
+            <div id="filePreview"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🔷 Nhập số lượng vật phẩm</div>
+            <input type="number" id="itemCount" placeholder="Số vật phẩm" />
+            <button id="createTableBtn">Tạo bảng nhập</button>
+        </div>
+
+        <div id="itemTableContainer"></div>
+    </div>
+</body>
+
+</html>

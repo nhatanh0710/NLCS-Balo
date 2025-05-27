@@ -23,6 +23,10 @@ h2 {
 
 /* ========== Navbar ========== */
 .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     background-color: #116466;
     padding: 12px;
     text-align: center;
@@ -81,62 +85,4 @@ footer {
 /* ========== Danh sách nội dung ========== */
 ul {
     line-height: 1.8;
-}
-
-/* ========== Input & section ========== */
-.container {
-    max-width: 800px;
-    margin: 40px auto;
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    font-family: Arial, sans-serif;
-}
-
-h2 {
-    color: #116466;
-    margin-bottom: 24px;
-}
-
-.section-title {
-    font-weight: bold;
-    margin-top: 24px;
-    margin-bottom: 8px;
-    color: #116466;
-}
-
-input[type="number"],
-input[type="file"] {
-    padding: 6px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-right: 12px;
-    font-size: 15px;
-}
-
-button,
-#createTableBtn {
-    background-color: #116466;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-button:hover,
-#createTableBtn:hover {
-    background-color: #0d4e4e;
-}
-
-ul {
-    margin-top: 10px;
-    padding-left: 20px;
-}
-
-li {
-    margin-bottom: 4px;
 }

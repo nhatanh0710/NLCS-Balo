@@ -1,42 +1,37 @@
-export function readCSVFile(inputElement, callback) {
-    const file = inputElement.files[0];
-    if (!file) return;
-
+export function readCSVFile(fileInput, callback) {
     const reader = new FileReader();
-    reader.onload = function (e) {
-        const lines = e.target.result.split('\n').map(line => line.trim()).filter(line => line !== '');
 
-        // 📌 Dòng đầu tiên là trọng lượng balo
+    reader.onload = function (e) {
+        const lines = e.target.result.trim().split('\n');
         let capacity = 0;
-        if (lines[0].toLowerCase().startsWith('trọng lượng balo:')) {
-            capacity = parseInt(lines[0].split(':')[1]);
-            lines.shift(); // bỏ dòng đầu
+        let startIndex = 0;
+
+        // 👇 Kiểm tra dòng đầu tiên có chứa trọng lượng balo
+        const firstLine = lines[0].toLowerCase();
+        if (firstLine.includes('trọng lượng') || firstLine.includes('dung lượng')) {
+            const match = firstLine.match(/\d+/);
+            if (match) capacity = parseInt(match[0]);
+            startIndex = 1;
         }
 
-        const headers = lines[0].split(',');
-        const isBalo2 = headers.includes('Số lượng');
+        const headers = lines[startIndex].split(',').map(h => h.trim());
         const items = [];
 
-        for (let i = 1; i < lines.length; i++) {
-            const [name, weight, value, quantity] = lines[i].split(',');
-            if (!name || isNaN(weight) || isNaN(value)) continue;
-
+        for (let i = startIndex + 1; i < lines.length; i++) {
+            const row = lines[i].split(',');
             const item = {
-                name: name.trim(),
-                weight: parseFloat(weight),
-                value: parseFloat(value)
+                name: row[0],
+                weight: parseFloat(row[1]),
+                value: parseFloat(row[2]),
             };
-
-            if (isBalo2) {
-                item.quantity = parseInt(quantity) || 1;
+            if (headers.includes('Số lượng')) {
+                item.quantity = parseInt(row[3]) || 1;
             }
-
             items.push(item);
         }
 
-        // 🔸 Lưu cả items và capacity qua callback
-        callback(items, capacity);
+        callback(items, capacity); // ✅ Trả thêm trọng lượng
     };
 
-    reader.readAsText(file);
+    reader.readAsText(fileInput.files[0]);
 }

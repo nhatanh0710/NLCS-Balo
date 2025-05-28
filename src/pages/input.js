@@ -35,16 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('fileInput')?.addEventListener('change', (e) => {
-        readCSVFile(e.target, (items) => {
+        readCSVFile(e.target, (items, capacity) => {
             itemList = items;
-            if (capacity) {
+            if (!isNaN(capacity) && capacity > 0) {
                 document.getElementById('capacityInput').value = capacity;
             }
             const preview = document.getElementById('filePreview');
             preview.innerHTML = `<h4>Xem trước từ file:</h4><ul>${items.map(item =>
-                `<li>${item.name} - ${item.weight}kg - ${item.value}đ</li>`
+                `<li>${item.name} - ${item.weight}kg - ${item.value}đ${item.quantity ? ` - SL: ${item.quantity}` : ''}</li>`
             ).join('')}</ul>`;
         });
+
     });
 
     document.getElementById('submitBtn')?.addEventListener('click', () => {

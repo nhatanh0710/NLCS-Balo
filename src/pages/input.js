@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('fileInput')?.addEventListener('change', (e) => {
         readCSVFile(e.target, (items) => {
             itemList = items;
+            if (capacity) {
+                document.getElementById('capacityInput').value = capacity;
+            }
             const preview = document.getElementById('filePreview');
             preview.innerHTML = `<h4>Xem trước từ file:</h4><ul>${items.map(item =>
                 `<li>${item.name} - ${item.weight}kg - ${item.value}đ</li>`
@@ -47,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('submitBtn')?.addEventListener('click', () => {
         const selectedType = document.querySelector('input[name="baloType"]:checked')?.value;
         const selectedAlgo = document.getElementById('algorithmSelect')?.value;
+        const capacity = parseInt(document.getElementById('capacityInput')?.value);
 
         if (itemList.length === 0) {
             itemList = getItemsFromTable();
@@ -57,8 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (isNaN(capacity) || capacity <= 0) {
+            alert("Vui lòng nhập trọng lượng balo hợp lệ.");
+            return;
+        }
+
         localStorage.setItem('baloType', selectedType);
         localStorage.setItem('items', JSON.stringify(itemList));
+        localStorage.setItem('capacity', capacity);  // 🔸 Lưu trọng lượng balo
 
         const redirectMap = {
             greedy: 'greedy.html',
@@ -69,17 +79,25 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = redirectMap[selectedAlgo];
     });
 
+
     // ✅ Nút Tải file CSV
     document.getElementById('exportBtn')?.addEventListener('click', () => {
         const items = getItemsFromTable();
+        const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
+        const baloCapacity = parseInt(document.getElementById('capacityInput')?.value) || 0;
+
         if (!items || items.length === 0) {
             alert("Không có dữ liệu để xuất.");
             return;
         }
+        if (isNaN(baloCapacity) || baloCapacity <= 0) {
+            alert("Vui lòng nhập trọng lượng balo hợp lệ trước khi xuất file.");
+            return;
+        }
 
-        const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
 
-        let csvContent = 'Tên,Khối lượng,Giá trị';
+
+        let csvContent = `Trọng lượng balo: ${baloCapacity}\nTên,Khối lượng,Giá trị`;
         if (baloType === 'balo2') csvContent += ',Số lượng';
         csvContent += '\n';
 

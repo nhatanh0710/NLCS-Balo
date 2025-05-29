@@ -52,3 +52,21 @@ export function getItemsFromTable() {
 
   return items;
 }
+export function fillItemTable(items) {
+  const rows = document.querySelectorAll('#itemTableContainer table tbody tr');
+  const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
+
+  items.forEach((item, i) => {
+    const inputs = rows[i]?.querySelectorAll('input');
+    if (!inputs) return;
+
+    inputs[0].value = item.name || '';
+    inputs[1].value = item.weight || 0;
+    inputs[2].value = item.value || 0;
+
+    if (baloType === 'balo2' && inputs[3]) {
+      inputs[3].value = item.quantity || 1;
+    }
+  });
+}
+

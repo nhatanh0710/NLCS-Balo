@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let itemList = [];
 
+    // Tạo bảng nhập tay
     document.getElementById('createTableBtn')?.addEventListener('click', () => {
         const count = parseInt(document.getElementById('itemCount').value);
         if (isNaN(count) || count <= 0) {
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         itemList = [];
     });
 
-    // Tự cập nhật bảng nếu người dùng đổi loại balo
+    // Tự cập nhật lại bảng nhập tay khi đổi loại balo
     document.querySelectorAll('input[name="baloType"]').forEach(radio => {
         radio.addEventListener('change', () => {
             const count = parseInt(document.getElementById('itemCount').value);
@@ -34,20 +35,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Khi chọn file CSV: hiển thị trọng lượng + bảng xem trước
     document.getElementById('fileInput')?.addEventListener('change', (e) => {
         readCSVFile(e.target, (items, capacity) => {
             itemList = items;
+
             if (!isNaN(capacity) && capacity > 0) {
                 document.getElementById('capacityInput').value = capacity;
             }
-            const preview = document.getElementById('filePreview');
-            preview.innerHTML = `<h4>Xem trước từ file:</h4><ul>${items.map(item =>
-                `<li>${item.name} - ${item.weight}kg - ${item.value}đ${item.quantity ? ` - SL: ${item.quantity}` : ''}</li>`
-            ).join('')}</ul>`;
-        });
 
+            // Tạo bảng xem trước từ file CSV
+            const preview = document.getElementById('filePreviewTable');
+            if (!items || items.length === 0) {
+                preview.innerHTML = '<p>Không có dữ liệu.</p>';
+                return;
+            }
+
+            let tableHTML = '<table><thead><tr><th>Tên</th><th>Khối lượng</th><th>Giá trị</th>';
+            if (items[0].quantity !== undefined) tableHTML += '<th>Số lượng</th>';
+            tableHTML += '</tr></thead><tbody>';
+
+            items.forEach(item => {
+                tableHTML += `<tr>
+                    <td>${item.name}</td>
+                    <td>${item.weight}</td>
+                    <td>${item.value}</td>`;
+                if (item.quantity !== undefined) {
+                    tableHTML += `<td>${item.quantity}</td>`;
+                }
+                tableHTML += '</tr>';
+            });
+
+            tableHTML += '</tbody></table>';
+            preview.innerHTML = tableHTML;
+        });
     });
 
+    // Nút giải bài toán
     document.getElementById('submitBtn')?.addEventListener('click', () => {
         const selectedType = document.querySelector('input[name="baloType"]:checked')?.value;
         const selectedAlgo = document.getElementById('algorithmSelect')?.value;
@@ -69,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         localStorage.setItem('baloType', selectedType);
         localStorage.setItem('items', JSON.stringify(itemList));
-        localStorage.setItem('capacity', capacity);  // 🔸 Lưu trọng lượng balo
+        localStorage.setItem('capacity', capacity);
 
         const redirectMap = {
             greedy: 'greedy.html',
@@ -80,8 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = redirectMap[selectedAlgo];
     });
 
-
-    // ✅ Nút Tải file CSV
+    // Nút xuất CSV
     document.getElementById('exportBtn')?.addEventListener('click', () => {
         const items = getItemsFromTable();
         const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
@@ -95,8 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Vui lòng nhập trọng lượng balo hợp lệ trước khi xuất file.");
             return;
         }
-
-
 
         let csvContent = `Trọng lượng balo: ${baloCapacity}\nTên,Khối lượng,Giá trị`;
         if (baloType === 'balo2') csvContent += ',Số lượng';

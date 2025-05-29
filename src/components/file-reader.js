@@ -6,7 +6,7 @@ export function readCSVFile(fileInput, callback) {
         let capacity = 0;
         let startIndex = 0;
 
-        // 👇 Kiểm tra dòng đầu tiên có chứa trọng lượng balo
+        // Dòng đầu có chứa trọng lượng balo?
         const firstLine = lines[0].toLowerCase();
         if (firstLine.includes('trọng lượng') || firstLine.includes('dung lượng')) {
             const match = firstLine.match(/\d+/);
@@ -14,23 +14,29 @@ export function readCSVFile(fileInput, callback) {
             startIndex = 1;
         }
 
-        const headers = lines[startIndex].split(',').map(h => h.trim());
+        // Tên các cột (headers)
+        const headers = lines[startIndex].split(',').map(h => h.trim().toLowerCase());
         const items = [];
 
         for (let i = startIndex + 1; i < lines.length; i++) {
             const row = lines[i].split(',');
-            const item = {
-                name: row[0],
-                weight: parseFloat(row[1]),
-                value: parseFloat(row[2]),
-            };
-            if (headers.includes('Số lượng')) {
-                item.quantity = parseInt(row[3]) || 1;
+            const item = {};
+
+            headers.forEach((header, index) => {
+                const value = row[index]?.trim();
+                if (header.includes('tên')) item.name = value;
+                else if (header.includes('khối') || header.includes('trọng')) item.weight = parseFloat(value);
+                else if (header.includes('giá')) item.value = parseFloat(value);
+                else if (header.includes('lượng')) item.quantity = parseInt(value) || 1;
+            });
+
+            // Kiểm tra dữ liệu hợp lệ
+            if (item.name && !isNaN(item.weight) && !isNaN(item.value)) {
+                items.push(item);
             }
-            items.push(item);
         }
 
-        callback(items, capacity); // ✅ Trả thêm trọng lượng
+        callback(items, capacity); // Trả về mảng items và dung lượng balo
     };
 
     reader.readAsText(fileInput.files[0]);

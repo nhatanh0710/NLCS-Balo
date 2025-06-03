@@ -11,10 +11,7 @@ function createWindow() {
     });
 
     win.loadFile('src/index.html');
-    // ✅ Xóa localStorage khi khởi động
-    win.webContents.on('did-finish-load', () => {
-        win.webContents.executeJavaScript('localStorage.clear();');
-    });
+   
 }
 
 app.whenReady().then(createWindow);

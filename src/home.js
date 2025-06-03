@@ -9,4 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     goBranch: 'pages/branch.html',
     goCompare: 'pages/compare.html'
   });
+  if (!sessionStorage.getItem('appStarted')) {
+    localStorage.clear(); // ✅ Xóa sạch khi app vừa mở
+    sessionStorage.setItem('appStarted', 'true');
+  }
 });

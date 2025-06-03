@@ -1,3 +1,4 @@
+import { calculateAndSortByUnitPrice } from '../components/sort-items.js';
 import { loadNavbar } from '../components/navbar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,101 +11,66 @@ document.addEventListener('DOMContentLoaded', () => {
     goCompare: 'compare.html'
   });
 
-  const items = JSON.parse(localStorage.getItem('items')) || [];
-  const type = localStorage.getItem('baloType') || 'balo1';
-  const capacity = parseInt(localStorage.getItem('capacity'));
+  const items = JSON.parse(localStorage.getItem('items') || '[]');
+  const capacity = parseFloat(localStorage.getItem('capacity') || '0');
+  const baloType = localStorage.getItem('baloType') || 'balo1';
+  const messageBox = document.getElementById('noDataMessage');
 
-  if (items.length === 0) {
-    document.getElementById('resultContainer').innerHTML = "<p>❌ Không có dữ liệu để giải.</p>";
+  if (!items.length || isNaN(capacity)) {
+    messageBox.textContent = '❗Không có dữ liệu. Vui lòng nhập trước.';
     return;
+  } else {
+    messageBox.textContent = '';
   }
 
-  // 🔷 Hiển thị lại dữ liệu đầu vào
-  document.getElementById('inputSummary').innerHTML = `
-    <h4>Loại bài toán: <span style="color:#116466">${type.toUpperCase()}</span></h4>
-    <p>Dung lượng balo: <b>${capacity}</b></p>
-    <ul>${items.map(i =>
-    `<li>${i.name} - ${i.weight}kg - ${i.value}đ${type === 'balo2' ? ` - SL: ${i.quantity || 1}` : ''}</li>`
-  ).join('')}</ul>
-  `;
+  const sortedItems = calculateAndSortByUnitPrice(items);
 
-  // 🔶 Tính hiệu quả: value / weight
-  const enriched = [...items].map(item => ({
-    ...item,
-    efficiency: item.value / item.weight
-  }));
-
-  let result = [];
+  let remaining = capacity;
   let totalWeight = 0;
   let totalValue = 0;
+  const result = [];
 
-  if (type === 'balo1') {
-    // 🔸 Balo 1: 0-1 Knapsack → chọn từng món hoặc không chọn
-    enriched.sort((a, b) => b.efficiency - a.efficiency);
-    for (let item of enriched) {
-      if (totalWeight + item.weight <= capacity) {
-        result.push({ ...item, taken: 1 });
-        totalWeight += item.weight;
-        totalValue += item.value;
+  for (let item of sortedItems) {
+    let take = 0;
+
+    if (baloType === 'balo3') {
+      if (item.weight <= remaining) {
+        take = 1;
       }
+    } else {
+      const max = baloType === 'balo2' ? item.quantity || 1 : Infinity;
+      take = Math.min(Math.floor(remaining / item.weight), max);
     }
 
-  } else if (type === 'balo2') {
-    // 🔸 Balo 2: có thể chọn nhiều lần, nhưng theo số lượng giới hạn
-    enriched.sort((a, b) => b.efficiency - a.efficiency);
-    for (let item of enriched) {
-      let count = Math.min(item.quantity || 1, Math.floor((capacity - totalWeight) / item.weight));
-      if (count > 0) {
-        result.push({ ...item, taken: count });
-        totalWeight += count * item.weight;
-        totalValue += count * item.value;
-      }
-    }
-
-  } else if (type === 'balo3') {
-    // 🔸 Balo 3: có thể lấy 1 phần món → chia nhỏ
-    enriched.sort((a, b) => b.efficiency - a.efficiency);
-    for (let item of enriched) {
-      if (totalWeight + item.weight <= capacity) {
-        result.push({ ...item, taken: 1 });
-        totalWeight += item.weight;
-        totalValue += item.value;
-      } else {
-        const remain = capacity - totalWeight;
-        if (remain > 0) {
-          const fraction = remain / item.weight;
-          result.push({ ...item, taken: fraction });
-          totalWeight += remain;
-          totalValue += item.value * fraction;
-        }
-        break; // Balo đầy rồi
-      }
+    if (take > 0) {
+      totalWeight += item.weight * take;
+      totalValue += item.value * take;
+      remaining -= item.weight * take;
+      result.push({ ...item, taken: take });
     }
   }
 
-  // 🔷 Hiển thị kết quả
-  const tableRows = result.map(r => `
-    <tr>
-      <td>${r.name}</td>
-      <td>${r.weight}</td>
-      <td>${r.value}</td>
-      <td>${r.taken.toFixed(2)}</td>
-    </tr>
-  `).join('');
+  // Bảng trái - đã sắp xếp
+  const sortedTable = document.getElementById('sortedTable');
+  sortedTable.innerHTML = `
+    <h3>Danh sách đã sắp xếp</h3>
+    <table><thead><tr><th>Tên</th><th>KL</th><th>GT</th><th>Đơn giá</th></tr></thead><tbody>
+      ${sortedItems.map(i =>
+    `<tr><td>${i.name}</td><td>${i.weight}</td><td>${i.value}</td><td>${i.unitPrice.toFixed(2)}</td></tr>`
+  ).join('')}
+    </tbody></table>
+  `;
 
-  document.getElementById('resultContainer').innerHTML = `
-    <h3>Kết quả lựa chọn:</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Tên</th><th>Khối lượng</th><th>Giá trị</th><th>Chọn</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${tableRows}
-      </tbody>
-    </table>
-    <p><b>Tổng trọng lượng:</b> ${totalWeight.toFixed(2)} / ${capacity}</p>
-    <p><b>Tổng giá trị:</b> ${totalValue.toFixed(2)}</p>
+  // Bảng phải - kết quả
+  const resultTable = document.getElementById('resultTable');
+  resultTable.innerHTML = `
+    <h3>Kết quả chọn</h3>
+    <table><thead><tr><th>Tên</th><th>SL</th><th>KL</th><th>GT</th></tr></thead><tbody>
+      ${result.map(i =>
+    `<tr><td>${i.name}</td><td>${i.taken}</td><td>${(i.weight * i.taken).toFixed(2)}</td><td>${(i.value * i.taken).toFixed(2)}</td></tr>`
+  ).join('')}
+    </tbody></table>
+    <p><strong>Tổng khối lượng:</strong> ${totalWeight.toFixed(2)} / ${capacity}</p>
+    <p><strong>Tổng giá trị:</strong> ${totalValue.toFixed(2)}</p>
   `;
 });

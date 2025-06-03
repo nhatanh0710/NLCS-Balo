@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Giải bài toán Quy hoạch động</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="input.css" />
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center;
+        }
+    </style>
+    <script type="module" src="dp.js" defer></script>
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <!-- Phần giới thiệu -->
+        <section class="intro-section">
+            <h2>🔷 Thuật toán Quy hoạch động (Dynamic Programming)</h2>
+            <p>
+                Thuật toán Quy hoạch động giải bài toán bằng cách chia nhỏ bài toán thành các bài toán con, lưu trữ kết
+                quả
+                của các bài toán con để tránh tính toán lại, từ đó tối ưu hóa việc lựa chọn vật phẩm trong balo.
+            </p>
+        </section>
+
+        <!-- Hiển thị bảng dữ liệu -->
+        <section class="solve-section grid-container">
+            <div id="sortedTable"></div>
+            <div id="resultTable"></div>
+        </section>
+    </div>
+</body>
+
+</html>

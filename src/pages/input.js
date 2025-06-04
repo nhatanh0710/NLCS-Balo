@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ✅ Upload file CSV
   document.getElementById('fileInput')?.addEventListener('change', (e) => {
     if (isManual) {
-      alert("Bạn đã tạo bảng nhập tay, không thể tải thêm file CSV.");
+      alert("Bạn đã tạo bảng nhập tay, không thể tải thêm file.");
       e.target.value = '';
       return;
     }
@@ -120,6 +120,22 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('items', JSON.stringify(items));
       localStorage.setItem('capacity', capacity);
       localStorage.setItem('baloType', document.querySelector('input[name="baloType"]:checked')?.value || 'balo1');
+
+      // ⛔ Nếu không có quantity, thì disable balo2
+      const hasQuantity = items.some(item => item.quantity !== undefined);
+      const balo2Radio = document.querySelector('input[value="balo2"]');
+
+      if (!hasQuantity && balo2Radio) {
+        balo2Radio.disabled = true;
+
+        // Nếu đang chọn balo2 thì chuyển sang balo1
+        if (balo2Radio.checked) {
+          document.querySelector('input[value="balo1"]').checked = true;
+          localStorage.setItem('baloType', 'balo1');
+        }
+      } else if (balo2Radio) {
+        balo2Radio.disabled = false;
+      }
 
       document.getElementById('itemCount').disabled = true;
       if (!isNaN(capacity)) {

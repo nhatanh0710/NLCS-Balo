@@ -1,4 +1,4 @@
-import { calculateAndSortByUnitPrice } from '../utils/sort-items.js';
+import { calculateAndSortByUnitPrice } from '../components/sort-items.js';
 import { loadNavbar } from '../components/navbar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const baloType = localStorage.getItem('baloType') || 'balo1';
 
     if (!items.length || isNaN(capacity)) {
-        alert("Không có dữ liệu. Vui lòng nhập trước.");
+        document.getElementById('resultContainer').innerHTML = `
+        <p style="color: red; text-align: center;">❗Không có dữ liệu. Vui lòng nhập trước.</p>
+    `;
         return;
     }
 
@@ -103,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const right = document.getElementById('resultTable');
 
     let sortedHTML = '<h3>Danh sách đã sắp xếp theo đơn giá</h3>';
-    sortedHTML += '<table><thead><tr><th>Tên</th><th>KL</th><th>GT</th><th>Đơn giá</th></tr></thead><tbody>';
+    sortedHTML += '<table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>';
     items.forEach(item => {
         sortedHTML += `<tr>
             <td>${item.name}</td>
@@ -118,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalWeight = 0;
     let totalValue = 0;
     let resultHTML = '<h3>Kết quả chọn</h3>';
-    resultHTML += '<table><thead><tr><th>Tên</th><th>Số lượng</th><th>KL</th><th>GT</th></tr></thead><tbody>';
+    resultHTML += '<table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>';
     selectedItems.reverse().forEach(item => {
         const weight = item.weight * item.taken;
         const value = item.value * item.taken;

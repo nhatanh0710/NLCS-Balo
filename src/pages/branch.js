@@ -1,4 +1,6 @@
+// branch.js - Thuật toán Nhánh Cận cho 3 loại balo
 import { loadNavbar } from '../components/navbar.js';
+import { calculateAndSortByUnitPrice } from '../components/sort-items.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadNavbar('branch.html', {
@@ -18,132 +20,100 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultEl = document.getElementById('resultTable');
 
     if (!items.length || isNaN(capacity)) {
-        sortedEl.innerHTML = resultEl.innerHTML = `<p style="color:red;">❗Không có dữ liệu. Vui lòng nhập trước.</p>`;
+        document.getElementById('resultContainer').innerHTML = `
+        <p style="color: red; text-align: center;">❗Không có dữ liệu. Vui lòng nhập trước.</p>
+    `;
         return;
     }
 
-    if (baloType !== 'balo3') {
-        sortedEl.innerHTML = resultEl.innerHTML = `<p style="color:red;">❗Thuật toán Nhánh cận chỉ áp dụng cho bài toán balo 0-1.</p>`;
-        return;
-    }
+    // ✅ Tính đơn giá và sắp xếp giảm dần
+    items = calculateAndSortByUnitPrice(items);
 
-    // ✅ Tính đơn giá và sắp xếp
-    items.forEach(i => i.unitPrice = i.value / i.weight);
-    items.sort((a, b) => b.unitPrice - a.unitPrice);
 
-    class Node {
-        constructor(level, value, weight, bound, taken) {
-            this.level = level;
-            this.value = value;
-            this.weight = weight;
-            this.bound = bound;
-            this.taken = taken || [];
-        }
-    }
+    // Biến lưu lời giải tốt nhất
+    let bestValue = 0;
+    let bestSolution = new Array(items.length).fill(0);
+    let currentSolution = new Array(items.length).fill(0);
 
-    function bound(u) {
-        if (u.weight >= capacity) return 0;
+    function BnB(i, curWeight, curValue) {
+        if (i >= items.length) return;
 
-        let profitBound = u.value;
-        let j = u.level + 1;
-        let totalWeight = u.weight;
+        // ✅ Giới hạn số lượng chọn tuỳ theo loại balo
+        let maxTake = Infinity;
+        if (baloType === 'balo2') maxTake = items[i].quantity || 0;
+        else if (baloType === 'balo3') maxTake = 1;
+        else maxTake = Math.floor((capacity - curWeight) / items[i].weight);
 
-        while (j < items.length && totalWeight + items[j].weight <= capacity) {
-            totalWeight += items[j].weight;
-            profitBound += items[j].value;
-            j++;
-        }
+        for (let j = 0; j <= maxTake; j++) {
+            const newWeight = curWeight + j * items[i].weight;
+            const newValue = curValue + j * items[i].value;
 
-        if (j < items.length) {
-            profitBound += (capacity - totalWeight) * items[j].unitPrice;
-        }
+            if (newWeight > capacity) break;
 
-        return profitBound;
-    }
-
-    function branchAndBound() {
-        let maxProfit = 0;
-        let bestTaken = [];
-        let queue = [];
-
-        const v = new Node(-1, 0, 0, 0, []);
-        v.bound = bound(v);
-        queue.push(v);
-
-        while (queue.length > 0) {
-            const u = queue.shift();
-
-            if (u.level === items.length - 1) continue;
-
-            const nextLevel = u.level + 1;
-
-            // Chọn vật phẩm
-            const left = new Node(
-                nextLevel,
-                u.value + items[nextLevel].value,
-                u.weight + items[nextLevel].weight,
-                0,
-                [...u.taken, true]
-            );
-
-            if (left.weight <= capacity && left.value > maxProfit) {
-                maxProfit = left.value;
-                bestTaken = left.taken;
+            // ✅ Tính cận trên (bound)
+            let bound = newValue;
+            let remain = capacity - newWeight;
+            if (i + 1 < items.length) {
+                bound += remain * items[i + 1].unitPrice;
             }
 
-            left.bound = bound(left);
-            if (left.bound > maxProfit) queue.push(left);
+            if (bound > bestValue) {
+                currentSolution[i] = j;
 
-            // Không chọn vật phẩm
-            const right = new Node(
-                nextLevel,
-                u.value,
-                u.weight,
-                0,
-                [...u.taken, false]
-            );
+                // Nếu là vật cuối cùng hoặc đầy balo
+                if (i === items.length - 1 || remain === 0) {
+                    if (newValue > bestValue) {
+                        bestValue = newValue;
+                        bestSolution = [...currentSolution];
+                    }
+                } else {
+                    BnB(i + 1, newWeight, newValue);
+                }
 
-            right.bound = bound(right);
-            if (right.bound > maxProfit) queue.push(right);
+                currentSolution[i] = 0; // Quay lui
+            }
         }
-
-        return { maxProfit, bestTaken };
     }
 
-    const result = branchAndBound();
+    BnB(0, 0, 0);
 
-    // ✅ Bảng bên trái: Danh sách vật phẩm
-    let leftHTML = '<h3>Danh sách đã sắp xếp theo đơn giá</h3>';
-    leftHTML += '<table><thead><tr><th>Tên</th><th>KL</th><th>GT</th><th>Đơn giá</th></tr></thead><tbody>';
+    // ✅ Hiển thị bảng trái: danh sách đã sắp xếp
+    let sortedHTML = '<h3>Danh sách đã sắp xếp theo đơn giá</h3>';
+    sortedHTML += '<table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>';
     items.forEach(item => {
-        leftHTML += `<tr>
-      <td>${item.name}</td>
-      <td>${item.weight}</td>
-      <td>${item.value}</td>
-      <td>${item.unitPrice.toFixed(2)}</td>
-    </tr>`;
+        sortedHTML += `<tr>
+            <td>${item.name}</td>
+            <td>${item.weight}</td>
+            <td>${item.value}</td>
+            <td>${item.unitPrice.toFixed(2)}</td>
+        </tr>`;
     });
-    leftHTML += '</tbody></table>';
-    sortedEl.innerHTML = leftHTML;
+    sortedHTML += '</tbody></table>';
+    sortedEl.innerHTML = sortedHTML;
 
-    // ✅ Bảng bên phải: Kết quả chọn
-    let rightHTML = '<h3>Kết quả chọn</h3>';
-    rightHTML += '<table><thead><tr><th>Tên</th><th>Chọn</th><th>KL</th><th>GT</th></tr></thead><tbody>';
+    // ✅ Hiển thị bảng phải: kết quả chọn
+    let resultHTML = '<h3>Kết quả chọn</h3>';
+    resultHTML += '<table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>';
 
     let totalWeight = 0;
-    result.bestTaken.forEach((take, i) => {
+    let totalValue = 0;
+
+    bestSolution.forEach((take, i) => {
         const item = items[i];
-        rightHTML += `<tr>
-      <td>${item.name}</td>
-      <td>${take ? '✅' : ''}</td>
-      <td>${take ? item.weight : 0}</td>
-      <td>${take ? item.value : 0}</td>
-    </tr>`;
-        if (take) totalWeight += item.weight;
+        const w = item.weight * take;
+        const v = item.value * take;
+        totalWeight += w;
+        totalValue += v;
+        resultHTML += `<tr>
+            <td>${item.name}</td>
+            <td>${take}</td>
+            <td>${w}</td>
+            <td>${v}</td>
+        </tr>`;
     });
 
-    rightHTML += `</tbody></table>
-    <p><strong>Tổng khối lượng:</strong> ${totalWeight} / ${capacity}</p>
-    <p><strong>Tổng giá trị:</strong> ${result.maxProfit}</p>`;
-    resultEl.innerHTML = rightHTML;
+    resultHTML += `</tbody></table>
+        <p><strong>Tổng khối lượng:</strong> ${totalWeight} / ${capacity}</p>
+        <p><strong>Tổng giá trị:</strong> ${totalValue}</p>`;
+    resultEl.innerHTML = resultHTML;
 });

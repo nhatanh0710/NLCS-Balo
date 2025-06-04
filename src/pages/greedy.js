@@ -14,13 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const items = JSON.parse(localStorage.getItem('items') || '[]');
   const capacity = parseFloat(localStorage.getItem('capacity') || '0');
   const baloType = localStorage.getItem('baloType') || 'balo1';
-  const messageBox = document.getElementById('noDataMessage');
+
 
   if (!items.length || isNaN(capacity)) {
-    messageBox.textContent = '❗Không có dữ liệu. Vui lòng nhập trước.';
+    document.getElementById('resultContainer').innerHTML = `
+        <p style="color: red; text-align: center;">❗Không có dữ liệu. Vui lòng nhập trước.</p>
+    `;
     return;
-  } else {
-    messageBox.textContent = '';
   }
 
   const sortedItems = calculateAndSortByUnitPrice(items);
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultTable = document.getElementById('resultTable');
   resultTable.innerHTML = `
     <h3>Kết quả chọn</h3>
-    <table><thead><tr><th>Tên</th><th>SL</th><th>KL</th><th>GT</th></tr></thead><tbody>
+    <table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>
       ${result.map(i =>
     `<tr><td>${i.name}</td><td>${i.taken}</td><td>${(i.weight * i.taken).toFixed(2)}</td><td>${(i.value * i.taken).toFixed(2)}</td></tr>`
   ).join('')}

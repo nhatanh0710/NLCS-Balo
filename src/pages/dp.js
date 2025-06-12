@@ -1,7 +1,10 @@
-import { calculateAndSortByUnitPrice } from '../components/sort-items.js';
+// dp.js - Giải bài toán bàng Quy hoạch Động (Dynamic Programming)
 import { loadNavbar } from '../components/navbar.js';
+import { calculateAndSortByUnitPrice } from '../components/sort-items.js';
+import { dpSolver } from '../components/dp-solver.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Tải thanh điều hướng navbar
     loadNavbar('dp.html', {
         goHome: '../index.html',
         goInput: 'input.html',
@@ -11,130 +14,55 @@ document.addEventListener('DOMContentLoaded', () => {
         goCompare: 'compare.html'
     });
 
+    // Đọc dữ liệu từ localStorage
     let items = JSON.parse(localStorage.getItem('items') || '[]');
     const capacity = parseFloat(localStorage.getItem('capacity') || '0');
     const baloType = localStorage.getItem('baloType') || 'balo1';
 
     if (!items.length || isNaN(capacity)) {
         document.getElementById('resultContainer').innerHTML = `
-        <p style="color: red; text-align: center;">❗Không có dữ liệu. Vui lòng nhập trước.</p>
+      <p style="color: red; text-align: center;">❗Không có dữ liệu. Vui lòng nhập trước.</p>
     `;
         return;
     }
 
-    items = calculateAndSortByUnitPrice(items);
+    // Tính đơn giá và sắp xếp danh sách theo đơn giá
+    const sortedItems = calculateAndSortByUnitPrice(items);
 
-    let n = items.length;
-    let dp = Array.from({ length: n + 1 }, () => Array(capacity + 1).fill(0));
+    // Gọi hàm giải bài toán DP và lấy kết quả
+    const { selectedItems, totalWeight, totalValue } = dpSolver(sortedItems, capacity, baloType);
 
-    if (baloType === 'balo3') {
-        for (let i = 1; i <= n; i++) {
-            for (let w = 0; w <= capacity; w++) {
-                if (items[i - 1].weight <= w) {
-                    dp[i][w] = Math.max(
-                        items[i - 1].value + dp[i - 1][w - items[i - 1].weight],
-                        dp[i - 1][w]
-                    );
-                } else {
-                    dp[i][w] = dp[i - 1][w];
-                }
-            }
-        }
-    } else if (baloType === 'balo2') {
-        for (let i = 1; i <= n; i++) {
-            const quantity = items[i - 1].quantity || 1;
-            for (let w = 0; w <= capacity; w++) {
-                dp[i][w] = dp[i - 1][w];
-                for (let q = 1; q <= quantity; q++) {
-                    if (q * items[i - 1].weight <= w) {
-                        dp[i][w] = Math.max(
-                            dp[i][w],
-                            dp[i - 1][w - q * items[i - 1].weight] + q * items[i - 1].value
-                        );
-                    }
-                }
-            }
-        }
-    } else {
-        for (let i = 1; i <= n; i++) {
-            for (let w = 0; w <= capacity; w++) {
-                if (items[i - 1].weight <= w) {
-                    dp[i][w] = Math.max(
-                        items[i - 1].value + dp[i][w - items[i - 1].weight],
-                        dp[i - 1][w]
-                    );
-                } else {
-                    dp[i][w] = dp[i - 1][w];
-                }
-            }
-        }
-    }
-
-    // Truy vết để lấy kết quả
-    let w = capacity;
-    let selectedItems = [];
-    for (let i = n; i > 0 && w >= 0; i--) {
-        if (dp[i][w] !== dp[i - 1][w]) {
-            const item = items[i - 1];
-            let taken = 1;
-            if (baloType === 'balo1') {
-                taken = 0;
-                while (w >= item.weight && dp[i][w] === dp[i][w - item.weight] + item.value) {
-                    taken++;
-                    w -= item.weight;
-                }
-            } else if (baloType === 'balo2') {
-                let quantity = item.quantity || 1;
-                taken = 0;
-                for (let q = quantity; q > 0; q--) {
-                    if (w >= q * item.weight && dp[i][w] === dp[i - 1][w - q * item.weight] + q * item.value) {
-                        taken = q;
-                        w -= q * item.weight;
-                        break;
-                    }
-                }
-            } else {
-                w -= item.weight;
-            }
-
-            selectedItems.push({ ...item, taken });
-        }
-    }
-
-    const left = document.getElementById('sortedTable');
-    const right = document.getElementById('resultTable');
-
-    let sortedHTML = '<h3>Danh sách đã sắp xếp theo đơn giá</h3>';
-    sortedHTML += '<table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>';
-    items.forEach(item => {
-        sortedHTML += `<tr>
-            <td>${item.name}</td>
-            <td>${item.weight}</td>
-            <td>${item.value}</td>
-            <td>${item.unitPrice.toFixed(2)}</td>
-        </tr>`;
+    // Bảng trái: danh sách đã sắp xếp
+    const sortedEl = document.getElementById('sortedTable');
+    let leftHTML = '<h3>Danh sách đã sắp xếp theo đơn giá</h3>';
+    leftHTML += '<table><thead><tr><th>Tên</th><th>KL</th><th>GT</th><th>Đơn giá</th></tr></thead><tbody>';
+    sortedItems.forEach(item => {
+        leftHTML += `<tr>
+      <td>${item.name}</td>
+      <td>${item.weight}</td>
+      <td>${item.value}</td>
+      <td>${item.unitPrice.toFixed(2)}</td>
+    </tr>`;
     });
-    sortedHTML += '</tbody></table>';
-    left.innerHTML = sortedHTML;
+    leftHTML += '</tbody></table>';
+    sortedEl.innerHTML = leftHTML;
 
-    let totalWeight = 0;
-    let totalValue = 0;
-    let resultHTML = '<h3>Kết quả chọn</h3>';
-    resultHTML += '<table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>';
-    selectedItems.reverse().forEach(item => {
-        const weight = item.weight * item.taken;
-        const value = item.value * item.taken;
-        totalWeight += weight;
-        totalValue += value;
-        resultHTML += `<tr>
-            <td>${item.name}</td>
-            <td>${item.taken}</td>
-            <td>${weight.toFixed(2)}</td>
-            <td>${value.toFixed(2)}</td>
-        </tr>`;
+    // Bảng phải: kết quả chọn
+    const resultEl = document.getElementById('resultTable');
+    let rightHTML = '<h3>Kết quả chọn</h3>';
+    rightHTML += `<table><thead><tr><th>Tên</th><th>Số lượng</th><th>Khối lượng</th><th>Giá trị</th></tr></thead><tbody>`;
+    selectedItems.forEach(item => {
+        const w = item.weight * item.taken;
+        const v = item.value * item.taken;
+        rightHTML += `<tr>
+      <td>${item.name}</td>
+      <td>${item.taken}</td>
+      <td>${w.toFixed(2)}</td>
+      <td>${v.toFixed(2)}</td>
+    </tr>`;
     });
-    resultHTML += `</tbody></table>
-        <p><strong>Tổng khối lượng:</strong> ${totalWeight.toFixed(2)} / ${capacity}</p>
-        <p><strong>Tổng giá trị:</strong> ${totalValue.toFixed(2)}</p>`;
-    right.innerHTML = resultHTML;
+    rightHTML += `</tbody></table>
+    <p><strong>Tổng khối lượng:</strong> ${totalWeight.toFixed(2)} / ${capacity}</p>
+    <p><strong>Tổng giá trị:</strong> ${totalValue.toFixed(2)}</p>`;
+    resultEl.innerHTML = rightHTML;
 });

@@ -1,5 +1,6 @@
 import { calculateAndSortByUnitPrice } from '../components/sort-items.js';
 import { loadNavbar } from '../components/navbar.js';
+import { greedySolver } from '../components/greedy-solver.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   loadNavbar('greedy.html', {
@@ -15,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const capacity = parseFloat(localStorage.getItem('capacity') || '0');
   const baloType = localStorage.getItem('baloType') || 'balo1';
 
-
   if (!items.length || isNaN(capacity)) {
     document.getElementById('resultContainer').innerHTML = `
         <p style="color: red; text-align: center;">❗Không có dữ liệu. Vui lòng nhập trước.</p>
@@ -24,31 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const sortedItems = calculateAndSortByUnitPrice(items);
-
-  let remaining = capacity;
-  let totalWeight = 0;
-  let totalValue = 0;
-  const result = [];
-
-  for (let item of sortedItems) {
-    let take = 0;
-
-    if (baloType === 'balo3') {
-      if (item.weight <= remaining) {
-        take = 1;
-      }
-    } else {
-      const max = baloType === 'balo2' ? item.quantity || 1 : Infinity;
-      take = Math.min(Math.floor(remaining / item.weight), max);
-    }
-
-    if (take > 0) {
-      totalWeight += item.weight * take;
-      totalValue += item.value * take;
-      remaining -= item.weight * take;
-      result.push({ ...item, taken: take });
-    }
-  }
+  const { selectedItems, totalWeight, totalValue } = greedySolver(sortedItems, capacity, baloType);
 
   // Bảng trái - đã sắp xếp
   const sortedTable = document.getElementById('sortedTable');
@@ -66,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resultTable.innerHTML = `
     <h3>Kết quả chọn</h3>
     <table><thead><tr><th>Tên</th><th>Số Lượng</th><th>Khối Lượng</th><th>Giá Trị</th></tr></thead><tbody>
-      ${result.map(i =>
+      ${selectedItems.map(i =>
     `<tr><td>${i.name}</td><td>${i.taken}</td><td>${(i.weight * i.taken).toFixed(2)}</td><td>${(i.value * i.taken).toFixed(2)}</td></tr>`
   ).join('')}
     </tbody></table>

@@ -123,3 +123,34 @@ td {
     padding: 6px;
     text-align: center;
 }
+
+/*Input*/
+.input-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.input-right {
+    background-color: #f3f8f7;
+    padding: 20px;
+    border-left: 5px solid #116466;
+    border-radius: 8px;
+    margin-left: -10px;
+}
+
+.input-right h3 {
+    margin-top: 0;
+    color: #116466;
+}
+
+.input-right ul {
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.input-right li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}

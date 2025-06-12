@@ -190,7 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const redirectMap = {
       greedy: 'greedy.html',
       dp: 'dp.html',
-      branch: 'branch.html'
+      branch: 'branch.html',
+      compare: 'compare.html'
     };
 
     window.location.href = redirectMap[selectedAlgo];

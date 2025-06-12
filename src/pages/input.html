@@ -14,46 +14,75 @@
 
   <div class="container">
     <h2>🔷 Nhập dữ liệu bài toán Balo</h2>
+    <div class="input-wrapper">
 
-    <div class="section">
-      <label class="section-title">Chọn loại bài toán:</label>
-      <label><input type="radio" name="baloType" value="balo1" checked /> Balo 1</label>
-      <label><input type="radio" name="baloType" value="balo2" /> Balo 2</label>
-      <label><input type="radio" name="baloType" value="balo3" /> Balo 3</label>
+      <div class="input-left">
+        <div class="section">
+          <label class="section-title">Chọn loại bài toán:</label>
+          <label><input type="radio" name="baloType" value="balo1" checked /> Balo 1</label>
+          <label><input type="radio" name="baloType" value="balo2" /> Balo 2</label>
+          <label><input type="radio" name="baloType" value="balo3" /> Balo 3</label>
+        </div>
+
+        <div class="section">
+          <label class="section-title">Tải file CSV:</label>
+          <input type="file" id="fileInput" accept=".csv,.txt,.xls,.xlsx" />
+        </div>
+
+        <div class="section">
+          <label class="section-title">Nhập trọng lượng balo:</label>
+          <input type="number" id="capacityInput" placeholder="Dung lượng tối đa" />
+        </div>
+        <div id="filePreviewTable"></div>
+        <div class="section">
+          <label class="section-title">Hoặc tạo bảng dữ liệu:</label>
+          <input type="number" id="itemCount" placeholder="Số vật phẩm" />
+          <button id="createTableBtn">Tạo bảng</button>
+        </div>
+
+        <div id="itemTableContainer"></div>
+
+        <button id="exportBtn">📥 Tải file CSV</button>
+
+        <div class="section">
+          <label class="section-title">Chọn thuật toán:</label>
+          <select id="algorithmSelect">
+            <option value="greedy">Greedy (Tham lam)</option>
+            <option value="dp">Dynamic Programming (Quy hoạch động)</option>
+            <option value="branch">Branch and Bound (Nhánh cận)</option>
+            <option value="compare">So sánh 3 thuật toán</option>
+          </select>
+        </div>
+
+        <button id="submitBtn">Giải bài toán</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+
+      <div class="input-right">
+        <h3>📘 Các loại bài toán Balo</h3>
+        <ul>
+          <li><strong>Balo 1:</strong> Cho phép chọn nhiều lần mỗi vật phẩm (không giới hạn).</li>
+          <li><strong>Balo 2:</strong> Mỗi vật phẩm có số lượng giới hạn cụ thể.</li>
+          <li><strong>Balo 3:</strong> Mỗi vật phẩm chỉ được chọn một lần (0-1 Knapsack).</li>
+        </ul>
+
+        <h3 style="margin-top: 30px;">💡 Gợi ý thuật toán phù hợp</h3>
+        <ul>
+          <li><strong>Greedy (Tham lam):</strong> Phù hợp cho <u>Balo 1</u>, giải nhanh nhưng không đảm bảo tối ưu.</li>
+          <li><strong>Dynamic Programming (Quy hoạch động):</strong> Dành cho <u>Balo 2 và Balo 3</u>, đảm bảo tìm lời
+            giải tối ưu.</li>
+          <li><strong>Branch and (Nhánh cận):</strong> Tối ưu nhất cho <u>Balo 3</u> (0-1), dùng cận trên để cắt tỉa.
+          </li>
+        </ul>
+
+        <p style="font-style: italic; color: gray;">
+          ➤ Hãy chọn loại bài toán phù hợp trước khi nhấn "Giải bài toán".
+        </p>
+      </div>
+
     </div>
-
-    <div class="section">
-      <label class="section-title">Tải file CSV:</label>
-      <input type="file" id="fileInput" accept=".csv,.txt,.xls,.xlsx" />
-    </div>
-
-    <div class="section">
-      <label class="section-title">Nhập trọng lượng balo:</label>
-      <input type="number" id="capacityInput" placeholder="Dung lượng tối đa" />
-    </div>
-    <div id="filePreviewTable"></div>
-    <div class="section">
-      <label class="section-title">Hoặc tạo bảng dữ liệu:</label>
-      <input type="number" id="itemCount" placeholder="Số vật phẩm" />
-      <button id="createTableBtn">Tạo bảng</button>
-    </div>
-
-    <div id="itemTableContainer"></div>
-
-    <button id="exportBtn">📥 Tải file CSV</button>
-
-    <div class="section">
-      <label class="section-title">Chọn thuật toán:</label>
-      <select id="algorithmSelect">
-        <option value="greedy">Greedy (Tham lam)</option>
-        <option value="dp">Dynamic Programming (Quy hoạch động)</option>
-        <option value="branch">Branch and Bound (Nhánh cận)</option>
-      </select>
-    </div>
-
-    <button id="submitBtn">Giải bài toán</button>
-    <button id="resetBtn">Reset</button>
   </div>
+
 </body>
 
 </html>

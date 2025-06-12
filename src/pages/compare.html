@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>So sánh Thuật toán</title>
+    <link rel="stylesheet" href="../style.css">
+    <script type="module" src="compare.js" defer></script>
+    <style>
+        section {
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <h2>📊 So sánh 3 Thuật toán giải bài toán Balo</h2>
+
+        <!-- Bảng đề bài -->
+        <section>
+            <h3>📦 Dữ liệu đầu vào</h3>
+            <div id="inputSummaryTable"></div>
+        </section>
+
+        <!-- Kết quả Greedy -->
+        <section>
+            <h3>🔷 Greedy</h3>
+            <div id="greedyResult"></div>
+        </section>
+
+        <!-- Kết quả Quy hoạch động -->
+        <section>
+            <h3>🔶 Dynamic Programming</h3>
+            <div id="dpResult"></div>
+        </section>
+
+        <!-- Kết quả Nhánh cận -->
+        <section>
+            <h3>🔶 Branch and Bound</h3>
+            <div id="branchResult"></div>
+        </section>
+    </div>
+</body>
+
+</html>

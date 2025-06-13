@@ -1,5 +1,4 @@
 
-
 export function dpSolver(items, capacity, baloType) {
     items = items.map(i => ({ ...i, unitPrice: i.value / i.weight }))
         .sort((a, b) => b.unitPrice - a.unitPrice);

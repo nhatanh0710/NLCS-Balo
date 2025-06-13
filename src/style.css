@@ -154,3 +154,43 @@ td {
     margin-bottom: 8px;
     line-height: 1.5;
 }
+
+/* === Compare.html === */
+.compare-results {
+    display: grid;
+    gap: 20px;
+    /* khoảng cách giữa các bảng */
+}
+
+/* Khi rộng ≥ 992 px (desktop) ‑ 3 cột */
+@media(min-width:992px) {
+    .compare-results {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Khi rộng trung bình (tablet) ‑ 2 cột */
+@media(min-width:600px) and (max-width:991px) {
+    .compare-results {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mỗi bảng thu gọn như “thẻ” */
+.compare-results table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.compare-results h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.compare-results th,
+.compare-results td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 0.9rem;
+}

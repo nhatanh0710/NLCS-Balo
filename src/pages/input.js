@@ -1,4 +1,4 @@
-import { createItemTable, getItemsFromTable } from '../components/item-table.js';
+import { createItemTable, getItemsFromTable, rebuildTable } from '../components/item-table.js';
 import { readCSVFile } from '../components/file-reader.js';
 import { loadNavbar } from '../components/navbar.js';
 
@@ -15,38 +15,38 @@ document.addEventListener('DOMContentLoaded', () => {
   let itemList = [];
 
   // ✅ Khôi phục trạng thái đã lưu
-  const fileUploaded = localStorage.getItem('fileUploaded') === 'true';
-  const isManual = localStorage.getItem('isManual') === 'true';
-  const savedType = localStorage.getItem('baloType') || 'balo1';
+  let fileUploaded = localStorage.getItem('fileUploaded') === 'true';
+  let isManual = localStorage.getItem('isManual') === 'true';
+  let savedType = localStorage.getItem('baloType') || 'balo1';
 
   document.querySelector(`input[name="baloType"][value="${savedType}"]`).checked = true;
 
-  // ✅ Khôi phục từ file CSV
-  if (fileUploaded) {
-    document.getElementById('itemCount').disabled = true;
-    itemList = JSON.parse(localStorage.getItem('items') || '[]');
-    const capacity = parseFloat(localStorage.getItem('capacity') || '0');
-    if (!isNaN(capacity)) {
-      document.getElementById('capacityInput').value = capacity;
-    }
+  // // ✅ Khôi phục từ file CSV
+  // if (fileUploaded) {
+  //   document.getElementById('itemCount').disabled = true;
+  //   itemList = JSON.parse(localStorage.getItem('items') || '[]');
+  //   const capacity = parseFloat(localStorage.getItem('capacity') || '0');
+  //   if (!isNaN(capacity)) {
+  //     document.getElementById('capacityInput').value = capacity;
+  //   }
 
-    // Hiển thị bảng xem trước
-    if (itemList.length > 0) {
-      const preview = document.getElementById('filePreviewTable');
-      let tableHTML = '<table><thead><tr><th>Tên</th><th>Khối lượng</th><th>Giá trị</th>';
-      if (itemList[0].quantity !== undefined) tableHTML += '<th>Số lượng</th>';
-      tableHTML += '</tr></thead><tbody>';
+  //   // Hiển thị bảng xem trước
+  //   if (itemList.length > 0) {
+  //     const preview = document.getElementById('filePreviewTable');
+  //     let tableHTML = '<table><thead><tr><th>Tên</th><th>Khối lượng</th><th>Giá trị</th>';
+  //     if (itemList[0].quantity !== undefined) tableHTML += '<th>Số lượng</th>';
+  //     tableHTML += '</tr></thead><tbody>';
 
-      itemList.forEach(item => {
-        tableHTML += `<tr><td>${item.name}</td><td>${item.weight}</td><td>${item.value}</td>`;
-        if (item.quantity !== undefined) tableHTML += `<td>${item.quantity}</td>`;
-        tableHTML += '</tr>';
-      });
+  //     itemList.forEach(item => {
+  //       tableHTML += `<tr><td>${item.name}</td><td>${item.weight}</td><td>${item.value}</td>`;
+  //       if (item.quantity !== undefined) tableHTML += `<td>${item.quantity}</td>`;
+  //       tableHTML += '</tr>';
+  //     });
 
-      tableHTML += '</tbody></table>';
-      preview.innerHTML = tableHTML;
-    }
-  }
+  //     tableHTML += '</tbody></table>';
+  //     preview.innerHTML = tableHTML;
+  //   }
+  // }
 
   // ✅ Khôi phục bảng nhập tay nếu có
   if (isManual) {
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (count > 0) {
       document.getElementById('itemCount').value = count;
-      createItemTable('itemTableContainer', count);
+      createItemTable('itemTableContainer', count, savedType);
       setTimeout(() => {
         const rows = document.querySelectorAll('#itemTableContainer tbody tr');
         const items = JSON.parse(localStorage.getItem('items') || '[]');
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    createItemTable('itemTableContainer', count);
+    createItemTable('itemTableContainer', count, savedType);
     itemList = [];
     localStorage.setItem('isManual', 'true');
     localStorage.setItem('itemCount', count);
@@ -98,11 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ✅ Khi đổi loại balo, cập nhật lại bảng nếu nhập tay
   document.querySelectorAll('input[name="baloType"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      const count = parseInt(document.getElementById('itemCount').value);
-      if (isManual && !isNaN(count) && count > 0) {
-        createItemTable('itemTableContainer', count);
-      }
+    radio.addEventListener('change', e => {
+      savedType = e.target.value;
+      localStorage.setItem('baloType', savedType);
+      rebuildTable(savedType);
     });
   });
 
@@ -115,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     readCSVFile(e.target, (items, capacity) => {
-      itemList = items; // ✅ RẤT QUAN TRỌNG: Gán lại biến toàn cục
+      itemList = items;
       localStorage.setItem('fileUploaded', 'true');
       localStorage.setItem('items', JSON.stringify(items));
       localStorage.setItem('capacity', capacity);
@@ -237,6 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ✅ Nút reset toàn bộ
   document.getElementById('resetBtn')?.addEventListener('click', () => {
+    const ok = confirm('Bạn có chắc muốn xoá toàn bộ dữ liệu và tải lại trang?');
+    if (!ok) return;
+
     localStorage.clear();
     location.reload();
   });

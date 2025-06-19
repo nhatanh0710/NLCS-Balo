@@ -17,7 +17,7 @@
     <div class="input-wrapper">
 
       <div class="input-left">
-        <div class="section">
+        <div class="section" id="baloTypeGroup">
           <label class="section-title">Chọn loại bài toán:</label>
           <label><input type="radio" name="baloType" value="balo1" checked /> Balo 1</label>
           <label><input type="radio" name="baloType" value="balo2" /> Balo 2</label>
@@ -33,9 +33,11 @@
           <label class="section-title">Nhập trọng lượng balo:</label>
           <input type="number" id="capacityInput" placeholder="Dung lượng tối đa" />
         </div>
+
         <div id="filePreviewTable"></div>
+        
         <div class="section">
-          <label class="section-title">Hoặc tạo bảng dữ liệu:</label>
+          <label class="section-title">Tạo bảng dữ liệu:</label>
           <input type="number" id="itemCount" placeholder="Số vật phẩm" />
           <button id="createTableBtn">Tạo bảng</button>
         </div>

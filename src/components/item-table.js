@@ -1,5 +1,5 @@
-export function createItemTable(containerId, count) {
-  const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
+export function createItemTable(containerId, count, savedType) {
+  const baloType = savedType;
   const container = document.getElementById(containerId);
   container.innerHTML = '';
 
@@ -7,6 +7,10 @@ export function createItemTable(containerId, count) {
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
 
+  if (!Number.isFinite(count) || count <= 0) {
+    document.getElementById(containerId).innerHTML = '';
+    return;
+  }
   headerRow.innerHTML = `
     <th>Tên</th>
     <th>Khối lượng</th>
@@ -70,3 +74,11 @@ export function fillItemTable(items) {
   });
 }
 
+export function rebuildTable(savedType) {
+  const countInput = document.getElementById('itemCount');
+  const count = Number.parseInt(countInput.value, 10) || 0;
+  const currentItems = getItemsFromTable();
+
+  createItemTable('itemTableContainer', count || currentItems.length, savedType);
+  fillItemTable(currentItems);
+}

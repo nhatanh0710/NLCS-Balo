@@ -28,7 +28,8 @@ export function loadNavbar(currentPageFileName, map) {
             });
 
             // Tô sáng trang đang mở
-            const activeId = Object.keys(map).find(id => map[id].endsWith(currentPageFileName));
+            const activePath = window.location.pathname.split('/').pop();  // lấy file name cuối URL
+            const activeId = Object.keys(map).find(id => map[id].includes(activePath));
             if (activeId) {
                 const el = document.getElementById(activeId);
                 if (el) el.classList.add('active');

@@ -1,6 +1,7 @@
 import { createItemTable, getItemsFromTable, rebuildTable } from '../components/item-table.js';
-import { readCSVFile } from '../components/file-reader.js';
+import { readCSVFile, exportItemCSV } from '../components/file-reader.js';
 import { loadNavbar } from '../components/navbar.js';
+import { solve } from '../components/solve.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   loadNavbar('input.html', {
@@ -20,33 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let savedType = localStorage.getItem('baloType') || 'balo1';
 
   document.querySelector(`input[name="baloType"][value="${savedType}"]`).checked = true;
-
-  // // ✅ Khôi phục từ file CSV
-  // if (fileUploaded) {
-  //   document.getElementById('itemCount').disabled = true;
-  //   itemList = JSON.parse(localStorage.getItem('items') || '[]');
-  //   const capacity = parseFloat(localStorage.getItem('capacity') || '0');
-  //   if (!isNaN(capacity)) {
-  //     document.getElementById('capacityInput').value = capacity;
-  //   }
-
-  //   // Hiển thị bảng xem trước
-  //   if (itemList.length > 0) {
-  //     const preview = document.getElementById('filePreviewTable');
-  //     let tableHTML = '<table><thead><tr><th>Tên</th><th>Khối lượng</th><th>Giá trị</th>';
-  //     if (itemList[0].quantity !== undefined) tableHTML += '<th>Số lượng</th>';
-  //     tableHTML += '</tr></thead><tbody>';
-
-  //     itemList.forEach(item => {
-  //       tableHTML += `<tr><td>${item.name}</td><td>${item.weight}</td><td>${item.value}</td>`;
-  //       if (item.quantity !== undefined) tableHTML += `<td>${item.quantity}</td>`;
-  //       tableHTML += '</tr>';
-  //     });
-
-  //     tableHTML += '</tbody></table>';
-  //     preview.innerHTML = tableHTML;
-  //   }
-  // }
 
   // ✅ Khôi phục bảng nhập tay nếu có
   if (isManual) {
@@ -159,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tableHTML += '</tbody></table>';
       preview.innerHTML = tableHTML;
+      localStorage.removeItem('results');
     });
   });
 
@@ -182,56 +157,41 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    localStorage.setItem('baloType', selectedType);
-    localStorage.setItem('items', JSON.stringify(itemList));
-    localStorage.setItem('capacity', capacity);
+    // Gói dữ liệu đầu vào
+    const input = { items: itemList, capacity, type: selectedType };
 
-    const redirectMap = {
+    // Chỉ giải đúng thuật toán đã chọn
+    let results = {};
+    if (selectedAlgo === 'compare') {
+      ['greedy', 'dp', 'branch'].forEach(a => results[a] = solve(input, a));
+    } else {
+      results[selectedAlgo] = solve(input, selectedAlgo);
+    }
+
+    // Lưu để trang đích chỉ việc hiển thị
+    localStorage.setItem('input', JSON.stringify(input));
+    localStorage.setItem('results', JSON.stringify(results));
+
+    window.location.href = {
       greedy: 'greedy.html',
       dp: 'dp.html',
       branch: 'branch.html',
       compare: 'compare.html'
-    };
+    }[selectedAlgo];
 
-    window.location.href = redirectMap[selectedAlgo];
   });
 
   // ✅ Nút xuất CSV
   document.getElementById('exportBtn')?.addEventListener('click', () => {
     const items = getItemsFromTable();
     const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
-    const baloCapacity = parseInt(document.getElementById('capacityInput').value) || 0;
+    const baloCapacity = parseInt(document.getElementById('capacityInput').value);
 
-    if (!items || items.length === 0) {
-      alert("Không có dữ liệu để xuất.");
-      return;
-    }
+    if (!items.length) return alert('Không có dữ liệu để xuất.');
+    if (isNaN(baloCapacity) || baloCapacity <= 0)
+      return alert('Vui lòng nhập trọng lượng balo hợp lệ trước khi xuất file.');
 
-    if (isNaN(baloCapacity) || baloCapacity <= 0) {
-      alert("Vui lòng nhập trọng lượng balo hợp lệ trước khi xuất file.");
-      return;
-    }
-
-    let csvContent = `Trọng lượng balo: ${baloCapacity}\nTên,Khối lượng,Giá trị`;
-    if (baloType === 'balo2') csvContent += ',Số lượng';
-    csvContent += '\n';
-
-    items.forEach(item => {
-      csvContent += `${item.name},${item.weight},${item.value}`;
-      if (baloType === 'balo2') {
-        csvContent += `,${item.quantity || 1}`;
-      }
-      csvContent += '\n';
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'du_lieu_balo.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportItemCSV(items, baloType, baloCapacity);       // ✅ gọi hàm mới
   });
 
   // ✅ Nút reset toàn bộ

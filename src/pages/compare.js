@@ -1,11 +1,9 @@
 import { loadNavbar } from '../components/navbar.js';
 import { calculateAndSortByUnitPrice } from '../components/sort-items.js';
-import { greedySolver } from '../components/greedy-solver.js';
-import { dpSolver } from '../components/dp-solver.js';
-import { branchAndBoundSolver } from '../components/branch-solver.js';
+import { exportCompareCSV } from '../components/file-reader.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    /* ----- 1. Navbar ------------------------------------------------------ */
+    // 1. Navbar
     loadNavbar('compare.html', {
         goHome: '../index.html',
         goInput: 'input.html',
@@ -15,13 +13,26 @@ document.addEventListener('DOMContentLoaded', () => {
         goCompare: 'compare.html'
     });
 
-    /* ----- 2. Lấy dữ liệu đã lưu ----------------------------------------- */
-    const itemsRaw = JSON.parse(localStorage.getItem('items') || '[]');
-    const capacity = parseFloat(localStorage.getItem('capacity') || '0');
-    const baloType = localStorage.getItem('baloType') || 'balo1';
+    //Nút tải file kết quả
+    document.getElementById('exportCompareBtn')?.addEventListener('click', () => {
+        const input = JSON.parse(localStorage.getItem('input'));
+        const results = JSON.parse(localStorage.getItem('results'));
+        exportCompareCSV(input, results);
+    });
 
+    // 2. Lấy dữ liệu đã giải sẵn (từ input.js)
+    const input = JSON.parse(localStorage.getItem('input') || '{}');
+    const results = JSON.parse(localStorage.getItem('results') || '{}');
+    const itemsRaw = input.items || [];
+    const capacity = input.capacity || 0;
+    const baloType = input.type || 'balo1';
+
+    // 2a. Kiểm tra thiếu dữ liệu
     if (!itemsRaw.length || isNaN(capacity)) {
-        const msg = '❗Không có dữ liệu. Vui lòng nhập trước.';
+        const msg = `
+      ❗Không có dữ liệu. Vui lòng 
+      <a href="input.html" style="color:blue; text-decoration:underline;">quay lại trang nhập</a>.
+    `;
         document.getElementById('sortedTable').innerHTML = `<p style="color:red;text-align:center;">${msg}</p>`;
         document.getElementById('greedyResult').innerHTML = '';
         document.getElementById('dpResult').innerHTML = '';
@@ -29,22 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    /* ----- 3. Bảng đề bài đã sắp xếp ------------------------------------ */
-    const items = calculateAndSortByUnitPrice([...itemsRaw]);     // clone mảng
-    renderSortedTable(items, baloType);                           // hiển thị bảng
+    // 3. Bảng đề bài (sắp xếp theo đơn giá)
+    const items = calculateAndSortByUnitPrice([...itemsRaw]);  // clone mảng
+    renderSortedTable(items, baloType);
 
-    /* ----- 4. Chạy ba thuật toán & hiển thị ------------------------------ */
-    renderResult('greedyResult',
-        'Thuật toán Tham lam (Greedy)',
-        greedySolver([...items], capacity, baloType));
-
-    renderResult('dpResult',
-        'Quy hoạch động (Dynamic Programming)',
-        dpSolver([...items], capacity, baloType));
-
-    renderResult('branchResult',
-        'Nhánh cận (Branch & Bound)',
-        branchAndBoundSolver([...items], capacity, baloType));
+    // 4. Hiển thị kết quả 3 thuật toán đã lưu sẵn
+    renderResult('greedyResult', 'Thuật toán Tham lam (Greedy)', results.greedy);
+    renderResult('dpResult', 'Quy hoạch động (Dynamic Programming)', results.dp);
+    renderResult('branchResult', 'Nhánh cận (Branch & Bound)', results.branch);
 });
 
 /**

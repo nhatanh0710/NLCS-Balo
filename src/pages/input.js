@@ -1,7 +1,8 @@
-import { createItemTable, getItemsFromTable, rebuildTable } from '../components/item-table.js';
+import { createItemTable, getItemsFromTable, rebuildTable, fillItemTable } from '../components/item-table.js';
 import { readCSVFile, exportItemCSV } from '../components/file-reader.js';
 import { loadNavbar } from '../components/navbar.js';
 import { solve } from '../components/solve.js';
+import { generateRandomItems } from '../components/randomdata.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   loadNavbar('input.html', {
@@ -14,35 +15,63 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   let itemList = [];
-
-  // ✅ Khôi phục trạng thái đã lưu
   let fileUploaded = localStorage.getItem('fileUploaded') === 'true';
   let isManual = localStorage.getItem('isManual') === 'true';
+  let fileChosen = false;
+
   let savedType = localStorage.getItem('baloType') || 'balo1';
 
-  document.querySelector(`input[name="baloType"][value="${savedType}"]`).checked = true;
+  // ✅ Chọn loại balo
+  const baloRadio = document.querySelector(`input[name="baloType"][value="${savedType}"]`);
+  if (baloRadio) baloRadio.checked = true;
 
-  // ✅ Khôi phục bảng nhập tay nếu có
+  // ✅ Enable lại các ô input mặc định
+  const itemCountInput = document.getElementById('itemCount');
+  const capacityInput = document.getElementById('capacityInput');
+
+  if (itemCountInput) itemCountInput.disabled = false;
+  if (capacityInput) capacityInput.disabled = false;
+
+  // ✅ Khôi phục trọng lượng balo
+  const savedCapacity = parseFloat(localStorage.getItem('capacity') || '0');
+  if (!isNaN(savedCapacity) && savedCapacity > 0 && capacityInput) {
+    capacityInput.value = savedCapacity;
+  }
+
+  // ✅ Lắng nghe sự kiện thay đổi để lưu
+  if (capacityInput) {
+    capacityInput.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      if (!isNaN(val) && val > 0) {
+        localStorage.setItem('capacity', val);
+      } else {
+        localStorage.removeItem('capacity');
+      }
+    });
+  }
+
+  // ✅ Khôi phục bảng nhập tay
   if (isManual) {
     document.getElementById('fileInput').disabled = true;
-    const count = parseInt(localStorage.getItem('itemCount') || '0');
-    const capacity = parseFloat(localStorage.getItem('capacity') || '0');
-    if (!isNaN(capacity)) {
-      document.getElementById('capacityInput').value = capacity;
-    }
 
-    if (count > 0) {
-      document.getElementById('itemCount').value = count;
+    const count = parseInt(localStorage.getItem('itemCount') || '0');
+    const items = JSON.parse(localStorage.getItem('items') || '[]');
+    const capacity = parseFloat(localStorage.getItem('capacity') || '0');
+
+    if (count > 0 && itemCountInput) itemCountInput.value = count;
+    if (!isNaN(capacity) && capacity > 0 && capacityInput) capacityInput.value = capacity;
+
+    if (count > 0 && items.length > 0) {
       createItemTable('itemTableContainer', count, savedType);
+
       setTimeout(() => {
         const rows = document.querySelectorAll('#itemTableContainer tbody tr');
-        const items = JSON.parse(localStorage.getItem('items') || '[]');
         items.forEach((item, index) => {
           const inputs = rows[index]?.querySelectorAll('input');
           if (inputs) {
-            inputs[0].value = item.name;
-            inputs[1].value = item.weight;
-            inputs[2].value = item.value;
+            inputs[0].value = item.name || '';
+            inputs[1].value = item.weight || '';
+            inputs[2].value = item.value || '';
             if (inputs[3]) inputs[3].value = item.quantity || 1;
           }
         });
@@ -50,14 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ✅ Nút tạo bảng nhập tay
+  // Nút tạo bảng thủ công
   document.getElementById('createTableBtn')?.addEventListener('click', () => {
-    if (fileUploaded) {
+    if (fileUploaded || fileChosen) {
       alert("Bạn đã tải file lên, không thể tạo bảng thủ công.");
       return;
     }
 
-    const count = parseInt(document.getElementById('itemCount').value);
+    const count = parseInt(itemCountInput.value);
     if (isNaN(count) || count <= 0) {
       alert("Vui lòng nhập số lượng hợp lệ.");
       return;
@@ -65,12 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     createItemTable('itemTableContainer', count, savedType);
     itemList = [];
+    isManual = true;
+    fileChosen = false;
     localStorage.setItem('isManual', 'true');
     localStorage.setItem('itemCount', count);
     document.getElementById('fileInput').disabled = true;
   });
 
-  // ✅ Khi đổi loại balo, cập nhật lại bảng nếu nhập tay
+  // Chuyển loại balo
   document.querySelectorAll('input[name="baloType"]').forEach(radio => {
     radio.addEventListener('change', e => {
       savedType = e.target.value;
@@ -79,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ✅ Upload file CSV
+  // Đọc file CSV
   document.getElementById('fileInput')?.addEventListener('change', (e) => {
     if (isManual) {
       alert("Bạn đã tạo bảng nhập tay, không thể tải thêm file.");
@@ -88,39 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     readCSVFile(e.target, (items, capacity) => {
-      itemList = items;
-      localStorage.setItem('fileUploaded', 'true');
-      localStorage.setItem('items', JSON.stringify(items));
-      localStorage.setItem('capacity', capacity);
-      localStorage.setItem('baloType', document.querySelector('input[name="baloType"]:checked')?.value || 'balo1');
-
-      // ⛔ Nếu không có quantity, thì disable balo2
-      const hasQuantity = items.some(item => item.quantity !== undefined);
-      const balo2Radio = document.querySelector('input[value="balo2"]');
-
-      if (!hasQuantity && balo2Radio) {
-        balo2Radio.disabled = true;
-
-        // Nếu đang chọn balo2 thì chuyển sang balo1
-        if (balo2Radio.checked) {
-          document.querySelector('input[value="balo1"]').checked = true;
-          localStorage.setItem('baloType', 'balo1');
-        }
-      } else if (balo2Radio) {
-        balo2Radio.disabled = false;
-      }
-
-      document.getElementById('itemCount').disabled = true;
-      if (!isNaN(capacity)) {
-        document.getElementById('capacityInput').value = capacity;
-      }
-
-      const preview = document.getElementById('filePreviewTable');
       if (!items || items.length === 0) {
-        preview.innerHTML = '<p style="color:red;">❗Không có dữ liệu.</p>';
+        alert("❗ File không có dữ liệu hợp lệ.");
         return;
       }
 
+      itemList = items;
+      fileChosen = true;
+
+      if (!isNaN(capacity) && capacityInput) capacityInput.value = capacity;
+      itemCountInput.disabled = true;
+
+      const preview = document.getElementById('filePreviewTable');
       let tableHTML = '<table><thead><tr><th>Tên</th><th>Khối lượng</th><th>Giá trị</th>';
       if (items[0].quantity !== undefined) tableHTML += '<th>Số lượng</th>';
       tableHTML += '</tr></thead><tbody>';
@@ -133,15 +143,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tableHTML += '</tbody></table>';
       preview.innerHTML = tableHTML;
+
+      const balo2Radio = document.querySelector('input[value="balo2"]');
+      const hasQuantity = items.some(item => item.quantity !== undefined);
+      if (!hasQuantity && balo2Radio) {
+        balo2Radio.disabled = true;
+        if (balo2Radio.checked) {
+          document.querySelector('input[value="balo1"]').checked = true;
+          localStorage.setItem('baloType', 'balo1');
+        }
+      } else if (balo2Radio) {
+        balo2Radio.disabled = false;
+      }
+
+      localStorage.setItem('fileUploaded', 'true');
+      localStorage.setItem('items', JSON.stringify(items));
+      localStorage.setItem('capacity', capacity);
+      localStorage.setItem('baloType', savedType);
       localStorage.removeItem('results');
     });
   });
 
-  // ✅ Nút giải bài toán
+  // Nút sinh dữ liệu ngẫu nhiên
+  document.getElementById('generateRandomBtn')?.addEventListener('click', () => {
+    const count = parseInt(itemCountInput.value);
+    const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
+
+    if (isNaN(count) || count <= 0) {
+      alert('Vui lòng nhập số lượng vật phẩm hợp lệ');
+      return;
+    }
+
+    if (count > 100) {
+      const ok = confirm('⚠️ Số lượng lớn có thể làm chậm trình duyệt. Tiếp tục?');
+      if (!ok) return;
+    }
+
+    const items = generateRandomItems(count, baloType);
+    localStorage.setItem('items', JSON.stringify(items));
+    localStorage.setItem('itemCount', count);
+    localStorage.setItem('isManual', 'true');
+    localStorage.setItem('baloType', baloType);
+    document.getElementById('fileInput').disabled = true;
+
+    createItemTable('itemTableContainer', count, baloType);
+    setTimeout(() => {
+      fillItemTable(items);
+    }, 50);
+  });
+
+  // Nút giải bài toán
   document.getElementById('submitBtn')?.addEventListener('click', () => {
     const selectedType = document.querySelector('input[name="baloType"]:checked')?.value;
     const selectedAlgo = document.getElementById('algorithmSelect')?.value;
-    const capacity = parseInt(document.getElementById('capacityInput').value);
+    const capacity = parseInt(capacityInput.value);
 
     if (itemList.length === 0 && !fileUploaded) {
       itemList = getItemsFromTable();
@@ -157,10 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Gói dữ liệu đầu vào
     const input = { items: itemList, capacity, type: selectedType };
 
-    // Chỉ giải đúng thuật toán đã chọn
     let results = {};
     if (selectedAlgo === 'compare') {
       ['greedy', 'dp', 'branch'].forEach(a => results[a] = solve(input, a));
@@ -168,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
       results[selectedAlgo] = solve(input, selectedAlgo);
     }
 
-    // Lưu để trang đích chỉ việc hiển thị
     localStorage.setItem('input', JSON.stringify(input));
     localStorage.setItem('results', JSON.stringify(results));
 
@@ -178,28 +230,50 @@ document.addEventListener('DOMContentLoaded', () => {
       branch: 'branch.html',
       compare: 'compare.html'
     }[selectedAlgo];
-
   });
 
-  // ✅ Nút xuất CSV
+  // Nút export CSV
   document.getElementById('exportBtn')?.addEventListener('click', () => {
     const items = getItemsFromTable();
     const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
-    const baloCapacity = parseInt(document.getElementById('capacityInput').value);
+    const baloCapacity = parseInt(capacityInput.value);
 
     if (!items.length) return alert('Không có dữ liệu để xuất.');
     if (isNaN(baloCapacity) || baloCapacity <= 0)
       return alert('Vui lòng nhập trọng lượng balo hợp lệ trước khi xuất file.');
 
-    exportItemCSV(items, baloType, baloCapacity);       // ✅ gọi hàm mới
+    exportItemCSV(items, baloType, baloCapacity);
   });
 
-  // ✅ Nút reset toàn bộ
+  // ✅ Nút reset
   document.getElementById('resetBtn')?.addEventListener('click', () => {
     const ok = confirm('Bạn có chắc muốn xoá toàn bộ dữ liệu và tải lại trang?');
     if (!ok) return;
 
     localStorage.clear();
+
+    const fileInput = document.getElementById('fileInput');
+    const itemCountInput = document.getElementById('itemCount');
+    const capacityInput = document.getElementById('capacityInput');
+
+    if (fileInput) {
+      fileInput.value = '';
+      fileInput.disabled = false;
+    }
+
+    if (itemCountInput) {
+      itemCountInput.value = '';
+      itemCountInput.disabled = false;
+    }
+
+    if (capacityInput) {
+      capacityInput.value = '';
+      capacityInput.disabled = false;
+    }
+
+    document.getElementById('filePreviewTable').innerHTML = '';
+    document.getElementById('itemTableContainer').innerHTML = '';
+
     location.reload();
   });
 });

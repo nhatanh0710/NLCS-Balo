@@ -247,33 +247,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ✅ Nút reset
   document.getElementById('resetBtn')?.addEventListener('click', () => {
-    const ok = confirm('Bạn có chắc muốn xoá toàn bộ dữ liệu và tải lại trang?');
-    if (!ok) return;
+    if (!confirm('Bạn chắc chắn muốn reset?')) return;
 
+    /* Xóa hết localStorage nhưng KHÔNG ghi thêm flag mới */
     localStorage.clear();
 
+    /* Đồng bộ lại biến trong bộ nhớ */
+    fileUploaded = false;
+    isManual = false;
+    fileChosen = false;
+    itemList = [];
+
+    /* Xóa UI cũ */
+    document.getElementById('filePreviewTable').innerHTML = '';
+    document.getElementById('itemTableContainer').innerHTML = '';
+
+    /* Mở khóa & làm sạch các input */
     const fileInput = document.getElementById('fileInput');
     const itemCountInput = document.getElementById('itemCount');
     const capacityInput = document.getElementById('capacityInput');
 
     if (fileInput) {
-      fileInput.value = '';
       fileInput.disabled = false;
+      fileInput.value = '';
     }
 
     if (itemCountInput) {
-      itemCountInput.value = '';
       itemCountInput.disabled = false;
+      itemCountInput.readOnly = false;
+      itemCountInput.value = '';
     }
 
     if (capacityInput) {
-      capacityInput.value = '';
       capacityInput.disabled = false;
+      capacityInput.readOnly = false;
+      capacityInput.value = '';
     }
 
-    document.getElementById('filePreviewTable').innerHTML = '';
-    document.getElementById('itemTableContainer').innerHTML = '';
-
-    location.reload();
+    /* Trả radio & dropdown về mặc định */
+    document.querySelector('input[name="baloType"][value="balo1"]').checked = true;
+    const algoSelect = document.getElementById('algorithmSelect');
+    if (algoSelect) algoSelect.value = 'greedy';
   });
+
+
 });

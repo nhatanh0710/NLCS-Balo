@@ -6,17 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>So sánh thuật toán</title>
   <link rel="stylesheet" href="../style.css" />
-  <link rel="stylesheet" href="input.css" />
+
   <script type="module" src="compare.js" defer></script>
 </head>
 
 <body>
   <header id="navbar-container"></header>
 
-  <main>
-    <div class="container">
-      <section class="intro-section">
-        <h2>🔷 So sánh 3 thuật toán giải bài toán Balo</h2>
+  <main class="container">
+    <section class="intro-section">
+      <h1>🔷 So sánh 3 thuật toán giải bài toán Balo 🔷</h2>
         <p>
           Trang này giúp bạn đánh giá sự khác nhau giữa ba thuật toán: <strong>Tham lam (Greedy)</strong>,
           <strong>Quy hoạch động (Dynamic Programming)</strong> và <strong>Nhánh cận (Branch and Bound)</strong>.
@@ -30,18 +29,17 @@
         </ul>
         </p>
         <button id="exportCompareBtn">📥 Tải file kết quả (CSV)</button>
-      </section>
-      <hr>
+    </section>
+    <hr>
 
-      <!-- Danh sách đã sắp xếp -->
-      <div id="sortedTable"></div>
+    <!-- Danh sách đã sắp xếp -->
+    <div id="sortedTable"></div>
 
-      <!-- 3 bảng kết quả -->
-      <div class="compare-results">
-        <div id="greedyResult"></div>
-        <div id="dpResult"></div>
-        <div id="branchResult"></div>
-      </div>
+    <!-- 3 bảng kết quả -->
+    <div class="compare-results">
+      <div id="greedyResult"></div>
+      <div id="dpResult"></div>
+      <div id="branchResult"></div>
     </div>
   </main>
 

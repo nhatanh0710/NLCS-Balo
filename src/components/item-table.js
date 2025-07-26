@@ -1,3 +1,4 @@
+//Tạo bảng vật phẩm
 export function createItemTable(containerId, count, savedType) {
   const baloType = savedType;
   const container = document.getElementById(containerId);
@@ -9,6 +10,7 @@ export function createItemTable(containerId, count, savedType) {
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
 
+  // Thêm tiêu đề cột dựa trên loại balo
   headerRow.innerHTML = `
     <th>Tên</th>
     <th>Khối lượng</th>
@@ -17,7 +19,7 @@ export function createItemTable(containerId, count, savedType) {
   `;
   thead.appendChild(headerRow);
   table.appendChild(thead);
-
+  // Tạo phần thân bảng với số lượng hàng tương ứng
   const tbody = document.createElement('tbody');
   for (let i = 0; i < count; i++) {
     const row = document.createElement('tr');
@@ -29,11 +31,13 @@ export function createItemTable(containerId, count, savedType) {
     `;
     tbody.appendChild(row);
   }
-
+  // Thêm phần thân vào bảng và bảng vào container
   table.appendChild(tbody);
   container.appendChild(table);
 }
 
+// Lấy danh sách vật phẩm từ bảng
+// Trả về mảng các đối tượng vật phẩm với tên, khối lượng, giá trị và số lượng (nếu có)
 export function getItemsFromTable() {
   const rows = document.querySelectorAll('#itemTableContainer table tbody tr');
   const items = [];
@@ -54,6 +58,8 @@ export function getItemsFromTable() {
   return items;
 }
 
+// Điền dữ liệu vào bảng vật phẩm từ mảng items
+// Mỗi phần tử trong mảng phải có các thuộc tính: name, weight, value
 export function fillItemTable(items) {
   const rows = document.querySelectorAll('#itemTableContainer table tbody tr');
   const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
@@ -73,6 +79,8 @@ export function fillItemTable(items) {
   });
 }
 
+// Tạo lại bảng vật phẩm từ dữ liệu đã lưu
+// Sử dụng số lượng và loại balo đã lưu trong localStorage
 export function rebuildTable(savedType) {
   const countInput = document.getElementById('itemCount');
   const count = Number.parseInt(countInput.value, 10) || 0;

@@ -1,3 +1,4 @@
+//Tải thanh điều hướng từ file HTML
 export function loadNavbar(currentPageFileName, map) {
     const navbarPath =
         currentPageFileName === 'index.html'

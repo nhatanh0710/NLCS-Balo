@@ -1,4 +1,5 @@
 // src/components/result-box.js
+// Hiển thị kết quả giải quyết bài toán balo
 export function displayResult(containerId, items, totalValue) {
     const container = document.getElementById(containerId);
     container.innerHTML = "";

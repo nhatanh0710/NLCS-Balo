@@ -17,8 +17,14 @@ main.container {
 }
 
 h1,
-h2 {
+h2,
+h3 {
     color: #116466;
+
+}
+
+h1 {
+    text-align: center;
 }
 
 /* ========== Navbar ========== */
@@ -53,20 +59,17 @@ h2 {
     color: #2c3531;
 }
 
-/* ========== Nút bắt đầu ========== */
-.start-btn {
-    text-align: center;
-    margin-top: 30px;
-}
-
+/* ========== Nút bấm ========== */
 button {
     padding: 10px 20px;
+    margin: 10px;
     font-size: 16px;
     background-color: #2C3531;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 button:hover {
@@ -82,11 +85,19 @@ footer {
     font-size: 14px;
 }
 
-/* ========== Danh sách nội dung ========== */
+/* ========== Danh sách chung ========== */
 ul {
     line-height: 1.8;
+    padding-left: 20px;
+    list-style-type: disc;
 }
 
+li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* ========== Mục giới thiệu ========== */
 .intro-section {
     margin-bottom: 30px;
     padding-bottom: 16px;
@@ -95,22 +106,43 @@ ul {
 
 .intro-section h2 {
     margin-bottom: 12px;
-    color: #116466;
 }
 
 .intro-section p {
     font-size: 16px;
-    color: #333;
     line-height: 1.6;
 }
 
-/*tao ket qua*/
-.grid-container {
+/* ========== Layout lưới (dùng cho input hoặc kết quả) ========== */
+.grid-container,
+.compare-results {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
+.grid-container {
+    grid-template-columns: 1fr 1fr;
+}
+
+.compare-results h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+/* Responsive layout cho compare-results */
+@media (min-width: 992px) {
+    .compare-results {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 600px) and (max-width: 991px) {
+    .compare-results {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========== Bảng ========== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -122,9 +154,10 @@ td {
     border: 1px solid #ccc;
     padding: 6px;
     text-align: center;
+    font-size: 0.9rem;
 }
 
-/*Input*/
+/* ========== Khối nhập liệu ========== */
 .input-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -140,57 +173,31 @@ td {
     margin-left: -10px;
 }
 
-.input-right h3 {
-    margin-top: 0;
-    color: #116466;
+/* ========== Khối điều khiển / action ========== */
+.action-buttons {
+    margin-top: 30px;
+    text-align: center;
 }
 
-.input-right ul {
-    padding-left: 20px;
-    list-style-type: disc;
+.action-buttons>* {
+    margin: 6px 10px;
 }
 
-.input-right li {
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-
-/* === Compare.html === */
-.compare-results {
-    display: grid;
-    gap: 20px;
-    /* khoảng cách giữa các bảng */
-}
-
-/* Khi rộng ≥ 992 px (desktop) ‑ 3 cột */
-@media(min-width:992px) {
-    .compare-results {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Khi rộng trung bình (tablet) ‑ 2 cột */
-@media(min-width:600px) and (max-width:991px) {
-    .compare-results {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Mỗi bảng thu gọn như “thẻ” */
-.compare-results table {
+/* ========== Định dạng ô input ========== */
+input[type="number"],
+input[type="text"],
+option,
+select {
     width: 100%;
-    border-collapse: collapse;
-}
-
-.compare-results h3 {
-    margin-top: 0;
-    text-align: center;
-}
-
-.compare-results th,
-.compare-results td {
+    padding: 6px 10px;
     border: 1px solid #ccc;
-    padding: 4px 6px;
-    text-align: center;
-    font-size: 0.9rem;
+    border-radius: 4px;
+    font-size: 15px;
+    box-sizing: border-box;
+
+}
+
+input[readonly] {
+    background-color: #eee;
+    cursor: not-allowed;
 }

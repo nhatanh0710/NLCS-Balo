@@ -1,3 +1,4 @@
+//Đọc file CSV và xuất file CSV
 export function readCSVFile(fileInput, callback) {
     const file = fileInput.files[0];
     if (!file) return;
@@ -54,6 +55,7 @@ export function readCSVFile(fileInput, callback) {
     reader.readAsText(file);
 
 }
+//Xuất file CSV từ danh sách vật phẩm
 export function exportItemCSV(items, baloType, capacity, filename = 'danh_sach_vat_pham.csv') {
     let csv = `Trọng lượng balo: ${capacity}\nTên,Khối lượng,Giá trị`;
     if (baloType === 'balo2') csv += ',Số lượng';
@@ -144,4 +146,49 @@ export function exportCompareCSV({ items, capacity, type }, results) {
 
     downloadCSV(csv, 'tong_hop_ket_qua.csv');
 }
+//Hàm reset toàn bộ dữ liệu
+export function resetApp() {
+    const confirmReset = confirm("Bạn có chắc chắn muốn đặt lại toàn bộ dữ liệu?");
+    if (!confirmReset) return;
 
+    // Xoá toàn bộ dữ liệu lưu trữ
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Mở lại các input bị khóa
+    const itemCountInput = document.getElementById('itemCount');
+    const capacityInput = document.getElementById('capacityInput');
+    const fileInput = document.getElementById('fileInput');
+
+    if (itemCountInput) {
+        itemCountInput.disabled = false;
+        itemCountInput.readOnly = false;
+        itemCountInput.value = '';
+    }
+
+    if (capacityInput) {
+        capacityInput.disabled = false;
+        capacityInput.readOnly = false;
+        capacityInput.value = '';
+    }
+
+    if (fileInput) {
+        fileInput.disabled = false;
+        fileInput.value = '';
+    }
+
+    // Xoá bảng dữ liệu nếu có
+    const tableContainer = document.getElementById('itemTableContainer');
+    if (tableContainer) {
+        tableContainer.innerHTML = '';
+    }
+
+    // Xoá bảng hiển thị kết quả nếu có
+    const resultTable = document.getElementById('resultTable');
+    if (resultTable) {
+        resultTable.innerHTML = '';
+    }
+
+    // Có thể reload lại trang nếu muốn chắc chắn reset hoàn toàn
+    // location.reload();
+}

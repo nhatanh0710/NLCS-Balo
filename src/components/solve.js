@@ -1,11 +1,9 @@
 // solve.js
-// =========
-// Nhập đường dẫn tới ba hàm giải thuật đã tồn tại của bạn.
-// Đổi lại path nếu chúng nằm ở file khác.
-
-import { greedySolver } from './greedy-solver.js';          // hoặc './greedy.js'
-import { dpSolver } from './dp-solver.js';              // hoặc './dp.js'
-import { branchAndBoundSolver } from './branch-solver.js';          // hoặc './branch.js'
+// Giải quyết bài toán balo bằng các thuật toán khác nhau
+// Các thuật toán được định nghĩa trong các file riêng biệt và được gọi từ đây
+import { greedySolver } from './greedy-solver.js';          
+import { dpSolver } from './dp-solver.js';              
+import { branchAndBoundSolver } from './branch-solver.js';         
 
 /**
  * Hàm duy nhất được trang input.js gọi.

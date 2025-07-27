@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Nếu có bảng manual
+  // ✅ Khôi phục bảng nhập tay
   if (isManual) {
     document.getElementById("fileInput").disabled = true;
     const count = parseInt(localStorage.getItem("itemCount") || "0");
@@ -110,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => fillItemTable(items), 50);
     }
   }
+
 
   /* ===== Nút tạo bảng ===== */
   document.getElementById("createTableBtn")?.addEventListener("click", async () => {
@@ -131,6 +133,14 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("isManual", "true");
     localStorage.setItem("itemCount", count);
     document.getElementById("fileInput").disabled = true;
+    // Chuyển loại balo
+    document.querySelectorAll('input[name="baloType"]').forEach(radio => {
+      radio.addEventListener('change', e => {
+        savedType = e.target.value;
+        localStorage.setItem('baloType', savedType);
+        rebuildTable(savedType);
+      });
+    });
   });
 
   /* ===== Đọc file CSV ===== */
@@ -226,6 +236,13 @@ document.addEventListener("DOMContentLoaded", () => {
       branch: 'branch.html',
       compare: 'compare.html'
     }[selectedAlgo];
+
+    if (isManual) {
+      localStorage.setItem("items", JSON.stringify(itemList));
+      localStorage.setItem("itemCount", itemList.length);
+      localStorage.setItem("isManual", "true");
+      localStorage.setItem("baloType", selectedType);
+    }
   });
 
   /* ===== Reset ===== */

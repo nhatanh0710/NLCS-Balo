@@ -2,7 +2,7 @@
 body {
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 20px;
     background-color: #f4f7f9;
     color: #333;
 }
@@ -10,7 +10,7 @@ body {
 main.container {
     max-width: 1200px;
     margin: 60px auto;
-    padding: 20px;
+    padding: 30px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -160,7 +160,7 @@ td {
 /* ========== Khối nhập liệu ========== */
 .input-wrapper {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 40px;
     align-items: flex-start;
 }

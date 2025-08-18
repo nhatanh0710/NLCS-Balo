@@ -1,63 +1,99 @@
-//Đọc file CSV và xuất file CSV
-export function readCSVFile(fileInput, callback) {
+import { showModal } from '../pages/input.js';
+export async function readCSVFile(fileInput, callback) {
     const file = fileInput.files[0];
     if (!file) return;
 
     const reader = new FileReader();
 
-    reader.onload = function (e) {
-        const lines = e.target.result.trim().split('\n');
-        let capacity = 0;
-        let startIndex = 0;
+    reader.onload = async function (e) {
+        const text = e.target.result.replace(/^\uFEFF/, ""); // bỏ BOM
+        const lines = text.trim().split(/\r?\n/);
 
-        // ✅ Dòng đầu chứa trọng lượng balo
-        const firstLine = lines[0].trim();
-        if (/^\d+$/.test(firstLine)) {
-            capacity = parseInt(firstLine);
-            startIndex = 1;
-        } else {
-            const found = firstLine.match(/(\d+)/);
-            if (found) {
-                capacity = parseInt(found[1]);
-                startIndex = 1;
-            }
+        if (lines.length < 2) {
+            await showModal("❌ Lỗi: File phải có ít nhất 2 dòng (1 dòng trọng lượng + 1 dòng dữ liệu).");
+            return;
         }
+
+        // ✅ Dòng đầu tiên chỉ chứa số (có thể kèm dấu , hoặc khoảng trắng)
+        const firstLine = lines[0].trim();
+        const capMatch = firstLine.match(/^(\d+)/);
+        if (!capMatch) {
+            await showModal("❌ Lỗi: Dòng đầu tiên phải là trọng lượng balo (chỉ số).");
+            return;
+        }
+        const capacity = parseInt(capMatch[1], 10);
 
         const items = [];
+        let baloType = null;
 
-        for (let i = startIndex; i < lines.length; i++) {
+        for (let i = 1; i < lines.length; i++) {
             const raw = lines[i].trim();
+            if (!raw) continue;
 
-            // ✅ Phân tách theo dấu phẩy hoặc khoảng trắng (1 hoặc nhiều)
-            const parts = raw.includes(',') ? raw.split(',') : raw.split(/\s+/);
+            // Bỏ qua dòng header nếu không có số nào
+            if (!/\d/.test(raw)) continue;
 
-            if (parts.length >= 3) {
-                const name = parts[0];
-                const weight = parseFloat(parts[1]);
-                const value = parseFloat(parts[2]);
+            // Nếu có dấu phẩy thì split theo phẩy, ngược lại split theo khoảng trắng
+            let parts = raw.includes(",") ? raw.split(",") : raw.split(/\s+/);
+            parts = parts.map(p => p.trim()).filter(p => p !== ""); s
 
-                if (name && !isNaN(weight) && !isNaN(value)) {
-                    const item = { name, weight, value };
-
-                    // Nếu có thêm cột số lượng
-                    if (parts.length >= 4) {
-                        item.quantity = parseInt(parts[3]) || 1;
-                    }
-
-                    items.push(item);
+            // Xác định loại balo từ dòng dữ liệu đầu tiên
+            if (baloType === null) {
+                if (parts.length === 3) baloType = "balo1";
+                else if (parts.length === 4) baloType = "balo2";
+                else {
+                    await showModal(`❌ Lỗi: Dòng ${i + 1} có ${parts.length} cột,phải đúng 3 hoặc 4.`);
+                    return;
                 }
             }
+
+            // Kiểm tra đồng nhất số cột
+            if ((baloType === "balo3" && parts.length !== 3) ||
+                (baloType === "balo2" && parts.length !== 4)) {
+                await showModal(`❌ Lỗi: Dòng ${i + 1} không đúng số cột, phải đúng ${baloType === "balo1" ? "3" : "4"} cột.`);
+                return;
+            }
+
+            const name = parts[0];
+            const weight = parseFloat(parts[1]);
+            const value = parseFloat(parts[2]);
+
+            if (!name || isNaN(weight) || isNaN(value)) {
+                await showModal(`❌ Lỗi: Dữ liệu không hợp lệ ở dòng ${i + 1}.`);
+                return;
+            }
+
+            const item = { name, weight, value };
+
+            if (baloType === "balo2") {
+                const qty = parseInt(parts[3]);
+                if (isNaN(qty)) {
+                    await showModal(`❌ Lỗi: Số lượng phải là số ở dòng ${i + 1}.`);
+                    return;
+                }
+                item.quantity = qty;
+            }
+
+            items.push(item);
         }
 
-        callback(items, capacity);
+        if (items.length === 0) {
+            await showModal("❌ Lỗi: Không có vật phẩm nào hợp lệ trong file.");
+            return;
+        }
+
+        callback(items, capacity, baloType);
     };
 
     reader.readAsText(file);
-
 }
+
+
+
+
 //Xuất file CSV từ danh sách vật phẩm
 export function exportItemCSV(items, baloType, capacity, filename = 'danh_sach_vat_pham.csv') {
-    let csv = `Trọng lượng balo: ${capacity}\nTên,Khối lượng,Giá trị`;
+    let csv = `${capacity}\nTên,Khối lượng,Giá trị`;
     if (baloType === 'balo2') csv += ',Số lượng';
     csv += '\n';
 

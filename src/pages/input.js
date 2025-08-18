@@ -5,7 +5,7 @@ import { solve } from '../components/solve.js';
 import { generateRandomItems } from '../components/randomdata.js';
 
 /* ==================== CUSTOM MODAL ALERT / CONFIRM ==================== */
-function showModal(message, isConfirm = false) {
+export function showModal(message, isConfirm = false) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.style.position = "fixed";
@@ -143,44 +143,62 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ===== Đọc file CSV ===== */
-  document.getElementById("fileInput")?.addEventListener("change", (e) => {
-    if (isManual) {
-      showModal("Bạn đã tạo bảng nhập tay, không thể tải thêm file.");
-      e.target.value = "";
+
+ /* ===== Đọc file CSV ===== */
+document.getElementById("fileInput")?.addEventListener("change", async (e) => {
+  if (isManual) {
+    await showModal("Bạn đã tạo bảng nhập tay, không thể tải thêm file.");
+    e.target.value = "";
+    return;
+  }
+
+  readCSVFile(e.target, async (items, capacity, baloType) => {
+    if (!items || items.length === 0) {
+      await showModal("❗ File không có dữ liệu hợp lệ.");
       return;
     }
-    readCSVFile(e.target, (items, capacity) => {
-      if (!items || items.length === 0) {
-        showModal("❗ File không có dữ liệu hợp lệ.");
-        return;
-      }
-      itemList = items;
-      fileChosen = true;
-      if (!isNaN(capacity) && capacityInput) capacityInput.value = capacity;
-      itemCountInput.disabled = true;
 
-      let tableHTML = "<table><thead><tr><th>Tên</th><th>Khối lượng</th><th>Giá trị</th>";
-      if (items[0].quantity !== undefined) tableHTML += "<th>Số lượng</th>";
-      tableHTML += "</tr></thead><tbody>";
-      items.forEach(item => {
-        tableHTML += `<tr><td>${item.name}</td><td>${item.weight}</td><td>${item.value}</td>`;
-        if (item.quantity !== undefined) tableHTML += `<td>${item.quantity}</td>`;
-        tableHTML += "</tr>";
-      });
-      tableHTML += "</tbody></table>";
-      document.getElementById("filePreviewTable").innerHTML = tableHTML;
+    itemList = items;
+    fileChosen = true;
 
-      localStorage.setItem("fileUploaded", "true");
-      localStorage.setItem("items", JSON.stringify(items));
-      localStorage.setItem("capacity", capacity);
-      localStorage.setItem("baloType", savedType);
+    // Trọng lượng
+    if (!isNaN(capacity) && capacityInput) {
+      capacityInput.value = capacity;
+    }
+    itemCountInput.disabled = true;
+
+    // Preview table
+    let tableHTML = "<table><thead><tr><th>Tên</th><th>Khối lượng</th><th>Giá trị</th>";
+    if (items[0].quantity !== undefined) tableHTML += "<th>Số lượng</th>";
+    tableHTML += "</tr></thead><tbody>";
+    items.forEach(item => {
+      tableHTML += `<tr><td>${item.name}</td><td>${item.weight}</td><td>${item.value}</td>`;
+      if (item.quantity !== undefined) tableHTML += `<td>${item.quantity}</td>`;
+      tableHTML += "</tr>";
     });
+    tableHTML += "</tbody></table>";
+    document.getElementById("filePreviewTable").innerHTML = tableHTML;
+
+    // Auto chọn radio (balo2 hoặc balo3)
+    if (baloType) {
+      const typeRadio = document.querySelector(`input[name="baloType"][value="${baloType}"]`);
+      if (typeRadio) typeRadio.checked = true;
+    }
+
+    // Lưu localStorage
+    localStorage.setItem("fileUploaded", "true");
+    localStorage.setItem("items", JSON.stringify(items));
+    localStorage.setItem("capacity", capacity);
+    localStorage.setItem("baloType", baloType || "balo1"); // nếu không xác định thì để balo1
   });
+});
+
+
 
   /* ===== Sinh dữ liệu ngẫu nhiên ===== */
   document.getElementById("generateRandomBtn")?.addEventListener("click", async () => {
     const count = parseInt(itemCountInput.value);
+    const capacity = parseInt(capacityInput.value);
     const baloType = document.querySelector('input[name="baloType"]:checked')?.value || "balo1";
     if (isNaN(count) || count <= 0) {
       await showModal("Vui lòng nhập số lượng vật phẩm hợp lệ");
@@ -190,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const ok = await showModal("⚠️ Số lượng lớn có thể làm chậm ứng dụng. Tiếp tục?", true);
       if (!ok) return;
     }
-    const items = generateRandomItems(count, baloType);
+    const items = generateRandomItems(count, baloType, capacity);
     localStorage.setItem("items", JSON.stringify(items));
     localStorage.setItem("itemCount", count);
     localStorage.setItem("isManual", "true");
@@ -200,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => fillItemTable(items), 50);
   });
 
-  // ========== 5. Giải bài toán ==========
+  // ========== Giải bài toán ==========
   document.getElementById('submitBtn').addEventListener('click', async () => {
     const selectedType = document.querySelector('input[name="baloType"]:checked')?.value;
     const selectedAlgo = document.getElementById('algorithmSelect').value;
@@ -245,6 +263,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Nút export CSV
+  document.getElementById('exportBtn')?.addEventListener('click', async () => {
+    const items = getItemsFromTable();
+    const baloType = document.querySelector('input[name="baloType"]:checked')?.value || 'balo1';
+    const baloCapacity = parseInt(capacityInput.value);
+
+    if (!items.length) return await showModal('Không có dữ liệu để xuất.');
+    if (isNaN(baloCapacity) || baloCapacity <= 0)
+      return await showModal('Vui lòng nhập trọng lượng balo hợp lệ trước khi xuất file.');
+
+    exportItemCSV(items, baloType, baloCapacity);
+  });
   /* ===== Reset ===== */
   document.getElementById("resetBtn")?.addEventListener("click", async () => {
     const ok = await showModal("Bạn chắc chắn muốn reset?", true);

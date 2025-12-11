@@ -52,25 +52,6 @@ JavaScript – xử lý logic và thuật toán
 
 QuickSort – hỗ trợ sắp xếp đồ vật theo đơn giá
 
-📁 Cấu trúc thư mục (gợi ý)
-/
-├── index.html
-├── input.html
-├── greedy.html
-├── dp.html
-├── branch.html
-├── js/
-│   ├── input.js
-│   ├── greedy.js
-│   ├── dp.js
-│   ├── branch.js
-│   ├── sort.js
-│   └── util.js
-├── assets/
-│   ├── css/
-│   └── images/
-└── README.md
-
 ⚙️ Cách chạy ứng dụng
 1️⃣ Cài đặt dependencies
 npm install
@@ -125,14 +106,6 @@ Xây cây trạng thái
 Áp dụng cắt tỉa để giảm số nhánh cần xét
 
 Hiệu quả tốt với dữ liệu vừa và nhỏ
-
-📸 Ảnh minh họa (gợi ý)
-
-Thêm ảnh screenshot của giao diện vào repo và đặt tại đây:
-
-![Giao diện chính](./assets/images/home.png)
-![Kết quả Greedy](./assets/images/greedy-result.png)
-![Kết quả DP](./assets/images/dp-result.png)
 
 🌱 Hướng phát triển
 
